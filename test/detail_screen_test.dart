@@ -20,20 +20,39 @@ void main() {
     await _openDetail(tester, entry);
     expect(find.text('STATE-default'), findsOneWidget);
     expect(find.text('STATE-disabled'), findsNothing);
+    expect(find.byType(SegmentedButton<String>), findsOneWidget);
   });
 
-  testWidgets('tapping a chip swaps the rendered preview', (tester) async {
+  testWidgets('tapping a segment swaps the rendered preview', (tester) async {
     final entry = CatalogEntry(name: 'Button', states: {
       'default': (_) => const Text('STATE-default'),
       'disabled': (_) => const Text('STATE-disabled'),
     },);
     await _openDetail(tester, entry);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'disabled'));
+    await tester.tap(find.text('disabled'));
     await tester.pumpAndSettle();
 
     expect(find.text('STATE-disabled'), findsOneWidget);
     expect(find.text('STATE-default'), findsNothing);
+  });
+
+  testWidgets('falls back to chip strip when more than 4 states',
+      (tester) async {
+    final entry = CatalogEntry(name: 'Many', states: {
+      'a': (_) => const Text('STATE-a'),
+      'b': (_) => const Text('STATE-b'),
+      'c': (_) => const Text('STATE-c'),
+      'd': (_) => const Text('STATE-d'),
+      'e': (_) => const Text('STATE-e'),
+    },);
+    await _openDetail(tester, entry);
+    expect(find.byType(SegmentedButton<String>), findsNothing);
+    expect(find.byType(ChoiceChip), findsNWidgets(5));
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'c'));
+    await tester.pumpAndSettle();
+    expect(find.text('STATE-c'), findsOneWidget);
   });
 
   testWidgets('throwing builder is caught by ErrorBoundary', (tester) async {
@@ -44,13 +63,15 @@ void main() {
     expect(find.textContaining('kaboom'), findsOneWidget);
   });
 
-  testWidgets('theme toggle in detail app bar flips theme mode', (tester) async {
+  testWidgets('theme toggle in detail app bar flips theme mode',
+      (tester) async {
     final entry = CatalogEntry(name: 'Button', states: {
       'default': (_) => const Text('STATE-default'),
     },);
     await _openDetail(tester, entry);
 
-    final before = tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode;
+    final before =
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode;
     expect(before, ThemeMode.light);
 
     await tester.tap(find.descendant(

@@ -18,7 +18,10 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = CatalogTheme.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final keys = widget.entry.states.keys.toList();
     final builder = widget.entry.states[_selected]!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.entry.name),
@@ -34,29 +37,20 @@ class _DetailScreenState extends State<DetailScreen> {
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 56,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              children: [
-                for (final key in widget.entry.states.keys)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(key),
-                      selected: _selected == key,
-                      onSelected: (_) => setState(() => _selected = key),
-                    ),
-                  ),
-              ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: _VariantPicker(
+              keys: keys,
+              selected: _selected,
+              onChanged: (k) => setState(() => _selected = k),
             ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: cs.outlineVariant),
           Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
+            child: Container(
+              color: cs.surfaceContainerLow,
+              padding: const EdgeInsets.all(24),
+              child: Center(
                 child: ErrorBoundary(
                   key: ValueKey(_selected),
                   builder: builder,
@@ -65,6 +59,52 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VariantPicker extends StatelessWidget {
+  final List<String> keys;
+  final String selected;
+  final ValueChanged<String> onChanged;
+  const _VariantPicker({
+    required this.keys,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (keys.length <= 4) {
+      return SizedBox(
+        width: double.infinity,
+        child: SegmentedButton<String>(
+          segments: [
+            for (final k in keys)
+              ButtonSegment<String>(value: k, label: Text(k)),
+          ],
+          selected: {selected},
+          showSelectedIcon: false,
+          onSelectionChanged: (s) => onChanged(s.first),
+        ),
+      );
+    }
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: keys.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        itemBuilder: (context, i) {
+          final k = keys[i];
+          return ChoiceChip(
+            label: Text(k),
+            selected: selected == k,
+            onSelected: (_) => onChanged(k),
+            visualDensity: VisualDensity.compact,
+          );
+        },
       ),
     );
   }
