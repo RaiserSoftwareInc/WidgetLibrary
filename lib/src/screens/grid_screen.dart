@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/catalog_entry.dart';
 import '../theme/theme_controller.dart';
+import '../widgets/error_boundary.dart';
 import 'detail_screen.dart';
 
 class GridScreen extends StatefulWidget {
@@ -88,10 +89,11 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final previewBuilder = entry.states.values.first;
     final preview = entry.thumbnail ??
         FittedBox(
           fit: BoxFit.contain,
-          child: Builder(builder: entry.states.values.first),
+          child: ErrorBoundary(builder: previewBuilder),
         );
 
     return Card(
