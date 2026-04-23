@@ -38,11 +38,13 @@ class _DetailScreenState extends State<DetailScreen> {
         title: Text(widget.entry.name),
         actions: [
           IconButton(
+            key: const ValueKey('wl.app_bar.specs'),
             tooltip: 'Specs',
             icon: const Icon(Icons.info_outline),
             onPressed: _showSpecs,
           ),
           IconButton(
+            key: const ValueKey('wl.app_bar.theme_toggle'),
             tooltip: 'Toggle theme',
             icon: Icon(
               theme.value == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
@@ -101,7 +103,10 @@ class _VariantPicker extends StatelessWidget {
         child: SegmentedButton<String>(
           segments: [
             for (final k in keys)
-              ButtonSegment<String>(value: k, label: Text(k)),
+              ButtonSegment<String>(
+                value: k,
+                label: Text(k, key: ValueKey('wl.detail.variant.$k')),
+              ),
           ],
           selected: {selected},
           showSelectedIcon: false,
@@ -118,6 +123,7 @@ class _VariantPicker extends StatelessWidget {
         itemBuilder: (context, i) {
           final k = keys[i];
           return ChoiceChip(
+            key: ValueKey('wl.detail.variant.$k'),
             label: Text(k),
             selected: selected == k,
             onSelected: (_) => onChanged(k),

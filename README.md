@@ -169,6 +169,53 @@ The in-app toggle always flips between light and dark regardless of `initialThem
 - **Empty state** — copy-paste `CatalogEntry(...)` sample snippet.
 - **Specs panel** — tap the info icon in the detail AppBar to open a bottom sheet showing the preview's laid-out size, active theme tokens (colors + text styles), and a depth-limited widget tree with diagnostic properties. Useful for inspecting what a widget is actually composed of. Custom widgets show richer data when they override `debugFillProperties`.
 
+## Agent automation (Marionette)
+
+The shell is keyed for use with [Marionette MCP](https://marionette.leancode.co/) so an AI agent can drive the viewer: search, filter, open entries, switch states, toggle theme, read specs, take screenshots.
+
+**Consumer setup** in your `tools/catalog/`:
+
+```yaml
+# tools/catalog/pubspec.yaml
+dev_dependencies:
+  marionette_flutter: ^0.5.0
+  marionette_mcp: ^0.5.0
+```
+
+```dart
+// tools/catalog/lib/main.dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:marionette_flutter/marionette_flutter.dart';
+import 'package:widget_library/widget_library.dart';
+import 'catalog.dart';
+
+void main() {
+  if (kDebugMode) {
+    MarionetteBinding.ensureInitialized();
+  } else {
+    WidgetsFlutterBinding.ensureInitialized();
+  }
+  runApp(CatalogApp(entries: buildCatalog()));
+}
+```
+
+Run in debug mode, copy the VM service `ws://...` URL from `flutter run`, point your agent's MCP config at `dart run marionette_mcp`.
+
+**Keys exposed by the shell** (all `wl.*` namespaced):
+
+| Surface | Key |
+| --- | --- |
+| Search field | `wl.search_field` |
+| Category chip | `wl.category_chip.<category>` |
+| Grid tile | `wl.grid_tile.<entry_name>` |
+| Theme toggle (both screens) | `wl.app_bar.theme_toggle` |
+| Specs button | `wl.app_bar.specs` |
+| Variant segment / chip | `wl.detail.variant.<state_key>` |
+| Empty-state copy button | `wl.empty_state.copy` |
+
+**Your own widgets** need their own keys (e.g. `ValueKey('submit_button')`) for an agent to interact with them. The shell handles the navigation chrome; catalog entries handle their own.
+
 ## Hot reload
 
 Catalog entries are plain Dart. Edit `catalog.dart` or any registered widget, save, press `r` in the `flutter run` terminal. No build step, no regen.

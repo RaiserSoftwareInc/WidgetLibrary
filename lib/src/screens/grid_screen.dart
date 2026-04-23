@@ -52,6 +52,7 @@ class _GridScreenState extends State<GridScreen> {
         title: Text(widget.title),
         actions: [
           IconButton(
+            key: const ValueKey('wl.app_bar.theme_toggle'),
             tooltip: 'Toggle theme',
             icon: Icon(
               theme.value == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
@@ -114,6 +115,7 @@ class _SearchBar extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: TextField(
+                key: const ValueKey('wl.search_field'),
                 controller: controller,
                 onChanged: onChanged,
                 decoration: const InputDecoration(
@@ -153,6 +155,7 @@ class _CategoryStrip extends StatelessWidget {
         itemBuilder: (context, i) {
           final c = categories[i];
           return FilterChip(
+            key: ValueKey('wl.category_chip.$c'),
             label: Text(c),
             selected: selected == c,
             onSelected: (_) => onSelected(c),
@@ -232,6 +235,7 @@ class _Tile extends StatelessWidget {
         );
 
     return Material(
+      key: ValueKey('wl.grid_tile.${entry.name}'),
       color: cs.surface,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: cs.outlineVariant),

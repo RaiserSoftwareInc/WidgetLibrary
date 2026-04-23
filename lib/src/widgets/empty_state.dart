@@ -85,6 +85,7 @@ class _EmptyStateState extends State<EmptyState> {
                         ),
                       ),
                       TextButton(
+                        key: const ValueKey('wl.empty_state.copy'),
                         onPressed: _copy,
                         style: TextButton.styleFrom(
                           minimumSize: const Size(0, 28),
