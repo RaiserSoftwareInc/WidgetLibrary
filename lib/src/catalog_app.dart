@@ -10,12 +10,18 @@ class CatalogApp extends StatefulWidget {
   final ThemeData? darkTheme;
   final String title;
 
+  /// Starting theme mode. Defaults to [ThemeMode.system]: resolves to
+  /// light/dark at boot based on [PlatformDispatcher.platformBrightness].
+  /// The user can still toggle it in-app.
+  final ThemeMode initialTheme;
+
   const CatalogApp({
     super.key,
     required this.entries,
     this.lightTheme,
     this.darkTheme,
     this.title = 'Widget Library',
+    this.initialTheme = ThemeMode.system,
   });
 
   @override
@@ -23,7 +29,15 @@ class CatalogApp extends StatefulWidget {
 }
 
 class _CatalogAppState extends State<CatalogApp> {
-  final ThemeController _controller = ThemeController();
+  late final ThemeController _controller =
+      ThemeController(initial: _resolveInitial(widget.initialTheme));
+
+  static ThemeMode _resolveInitial(ThemeMode mode) {
+    if (mode != ThemeMode.system) return mode;
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    return brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+  }
 
   @override
   void dispose() {

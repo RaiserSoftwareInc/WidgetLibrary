@@ -140,6 +140,24 @@ Shell surfaces read `Theme.of(context).colorScheme.*` (surface, surfaceContainer
 
 If you omit themes, defaults are `ThemeData.light(useMaterial3: true)` and `ThemeData.dark(useMaterial3: true)`.
 
+### Initial mode
+
+`CatalogApp` takes an optional `initialTheme` param that controls which mode the viewer starts in:
+
+```dart
+CatalogApp(
+  entries: buildCatalog(),
+  lightTheme: appLight,
+  darkTheme: appDark,
+  initialTheme: ThemeMode.system,  // default — follows OS at boot
+);
+```
+
+- `ThemeMode.system` (default) — resolves to light/dark based on `PlatformDispatcher.platformBrightness` at boot
+- `ThemeMode.light` / `ThemeMode.dark` — explicit override
+
+The in-app toggle always flips between light and dark regardless of `initialTheme`.
+
 ## Shell behavior
 
 - **Grid** — 2-col tiles. Preview on `surfaceContainerLow`, name + state-count badge on separator footer.

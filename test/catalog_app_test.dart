@@ -25,6 +25,24 @@ void main() {
     expect(materialApp2.themeMode, ThemeMode.dark);
   });
 
+  testWidgets('CatalogApp honors explicit initialTheme', (tester) async {
+    await tester.pumpWidget(
+      const CatalogApp(entries: [], initialTheme: ThemeMode.dark),
+    );
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.dark);
+  });
+
+  testWidgets('CatalogApp default initialTheme follows platform brightness',
+      (tester) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+
+    await tester.pumpWidget(const CatalogApp(entries: []));
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.dark);
+  });
+
   testWidgets('CatalogApp passes through lightTheme and darkTheme', (tester) async {
     final light = ThemeData(primarySwatch: Colors.blue);
     final dark = ThemeData.dark();
