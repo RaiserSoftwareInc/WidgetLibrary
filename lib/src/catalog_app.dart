@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'models/catalog_entry.dart';
+import 'screens/grid_screen.dart';
 import 'theme/theme_controller.dart';
 
 class CatalogApp extends StatefulWidget {
@@ -42,23 +43,10 @@ class _CatalogAppState extends State<CatalogApp> {
             theme: widget.lightTheme ?? ThemeData.light(useMaterial3: true),
             darkTheme: widget.darkTheme ?? ThemeData.dark(useMaterial3: true),
             themeMode: mode,
-            home: _PlaceholderHome(entries: widget.entries),
+            home: GridScreen(entries: widget.entries, title: widget.title),
           );
         },
       ),
-    );
-  }
-}
-
-class _PlaceholderHome extends StatelessWidget {
-  final List<CatalogEntry> entries;
-  const _PlaceholderHome({required this.entries});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Widget Library')),
-      body: Center(child: Text('Entries: ${entries.length}')),
     );
   }
 }
