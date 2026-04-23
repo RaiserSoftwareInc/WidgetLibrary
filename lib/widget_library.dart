@@ -1,3 +1,3 @@
 library widget_library;
 
-// Public API exports are added in later tasks.
+export 'src/models/catalog_entry.dart';
