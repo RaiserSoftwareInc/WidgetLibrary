@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-// ignore: unused_import
 import 'package:widget_library/widget_library.dart';
 
+import 'catalog.dart';
+
 void main() {
-  runApp(const MaterialApp(home: Scaffold(body: Center(child: Text('Scaffolded')))));
+  runApp(CatalogApp(
+    entries: buildCatalog(),
+    lightTheme: ThemeData.light(useMaterial3: true),
+    darkTheme: ThemeData.dark(useMaterial3: true),
+  ));
 }
