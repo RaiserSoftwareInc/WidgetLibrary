@@ -167,6 +167,7 @@ The in-app toggle always flips between light and dark regardless of `initialThem
 - **Detail** — `SegmentedButton` for ≤4 states, scrolling chip strip for >4.
 - **Error handling** — `ErrorBoundary` wraps each state preview. A throwing builder renders inline error text + stack trace instead of crashing the viewer.
 - **Empty state** — copy-paste `CatalogEntry(...)` sample snippet.
+- **Specs panel** — tap the info icon in the detail AppBar to open a bottom sheet showing the preview's laid-out size, active theme tokens (colors + text styles), and a depth-limited widget tree with diagnostic properties. Useful for inspecting what a widget is actually composed of. Custom widgets show richer data when they override `debugFillProperties`.
 
 ## Hot reload
 

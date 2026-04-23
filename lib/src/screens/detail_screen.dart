@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/catalog_entry.dart';
 import '../theme/theme_controller.dart';
 import '../widgets/error_boundary.dart';
+import '../widgets/specs_panel.dart';
 
 class DetailScreen extends StatefulWidget {
   final CatalogEntry entry;
@@ -14,6 +15,16 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   late String _selected = widget.entry.states.keys.first;
+  final GlobalKey _previewKey = GlobalKey();
+
+  void _showSpecs() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => SpecsPanel(previewKey: _previewKey),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +37,11 @@ class _DetailScreenState extends State<DetailScreen> {
       appBar: AppBar(
         title: Text(widget.entry.name),
         actions: [
+          IconButton(
+            tooltip: 'Specs',
+            icon: const Icon(Icons.info_outline),
+            onPressed: _showSpecs,
+          ),
           IconButton(
             tooltip: 'Toggle theme',
             icon: Icon(
@@ -51,9 +67,12 @@ class _DetailScreenState extends State<DetailScreen> {
               color: cs.surfaceContainerLow,
               padding: const EdgeInsets.all(24),
               child: Center(
-                child: ErrorBoundary(
-                  key: ValueKey(_selected),
-                  builder: builder,
+                child: KeyedSubtree(
+                  key: _previewKey,
+                  child: ErrorBoundary(
+                    key: ValueKey(_selected),
+                    builder: builder,
+                  ),
                 ),
               ),
             ),
