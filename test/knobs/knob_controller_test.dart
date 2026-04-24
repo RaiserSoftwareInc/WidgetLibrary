@@ -87,5 +87,25 @@ void main() {
       );
       expect(() => c.reconcile([stringHeight]), throwsStateError);
     });
+
+    test('set with wrong-typed value throws ArgumentError', () {
+      final c = KnobController([height]);
+      expect(() => c.set('height', 'oops'), throwsArgumentError);
+      expect(c.values['height'], 220.0); // value unchanged
+    });
+
+    test('set with null throws ArgumentError', () {
+      final c = KnobController([height]);
+      expect(() => c.set('height', null), throwsArgumentError);
+      expect(c.values['height'], 220.0);
+    });
+
+    test('reconcile notifies listeners', () {
+      final c = KnobController([height]);
+      var n = 0;
+      c.addListener(() => n++);
+      c.reconcile([height, enabled]);
+      expect(n, 1);
+    });
   });
 }

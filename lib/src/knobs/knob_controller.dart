@@ -19,8 +19,16 @@ class KnobController extends ChangeNotifier {
   KnobValues get readOnly => KnobValues(_values);
 
   void set(String id, Object? value) {
-    if (!_values.containsKey(id)) {
-      throw StateError('KnobController: unknown knob id "$id"');
+    final knob = _knobs.firstWhere(
+      (k) => k.id == id,
+      orElse: () => throw StateError('KnobController: unknown knob id "$id"'),
+    );
+    if (value == null || !_isCompatible(knob, value)) {
+      throw ArgumentError.value(
+        value,
+        'value',
+        'incompatible with ${knob.runtimeType} for id "$id"',
+      );
     }
     _values[id] = value;
     notifyListeners();
