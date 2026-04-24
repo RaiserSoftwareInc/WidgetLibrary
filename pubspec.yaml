@@ -1,6 +1,6 @@
 name: widget_library
 description: Personal Flutter widget viewer with grid navigation and state switching.
-version: 0.4.1
+version: 0.5.0
 publish_to: none
 
 environment:

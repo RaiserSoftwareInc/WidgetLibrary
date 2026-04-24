@@ -69,11 +69,19 @@ class _DetailScreenState extends State<DetailScreen> {
               color: cs.surfaceContainerLow,
               padding: const EdgeInsets.all(24),
               child: Center(
-                child: KeyedSubtree(
-                  key: _previewKey,
-                  child: ErrorBoundary(
-                    key: ValueKey(_selected),
-                    builder: builder,
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: widget.entry.previewSize.width,
+                      maxHeight: widget.entry.previewSize.height,
+                    ),
+                    child: KeyedSubtree(
+                      key: _previewKey,
+                      child: ErrorBoundary(
+                        key: ValueKey(_selected),
+                        builder: builder,
+                      ),
+                    ),
                   ),
                 ),
               ),

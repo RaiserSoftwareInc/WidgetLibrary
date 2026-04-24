@@ -123,6 +123,7 @@ Rules:
 - `states` — required, non-empty `Map<String, WidgetBuilder>`. Keys are shown in the variant picker; insertion order is preserved.
 - `category` — optional. When at least one entry sets it, a filter chip strip appears above the grid. Otherwise hidden.
 - `thumbnail` — optional `Widget`. When absent, the tile auto-renders the first state via `FittedBox`.
+- `previewSize` — optional `Size`, defaults to `Size(390, 844)`. Virtual viewport given to the widget when rendered. Widgets using `double.infinity`, `Stack(fit: expand)`, or full-bleed patterns resolve against these bounds instead of an infinite canvas. Override per-entry for widgets with a different natural footprint (e.g. a 120-px-wide tile).
 
 ## Theming
 

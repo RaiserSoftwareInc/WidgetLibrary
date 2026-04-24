@@ -231,7 +231,13 @@ class _Tile extends StatelessWidget {
     final preview = entry.thumbnail ??
         FittedBox(
           fit: BoxFit.contain,
-          child: ErrorBoundary(builder: previewBuilder),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: entry.previewSize.width,
+              maxHeight: entry.previewSize.height,
+            ),
+            child: ErrorBoundary(builder: previewBuilder),
+          ),
         );
 
     return Material(
