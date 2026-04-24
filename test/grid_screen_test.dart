@@ -12,7 +12,7 @@ CatalogEntry _entry(String name, {String? category}) => CatalogEntry(
 void main() {
   testWidgets('shows empty state with sample code when entries list is empty',
       (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: () => const []));
+    await tester.pumpWidget(CatalogApp(entriesBuilder: () => const []));
     expect(find.text('No widgets registered'), findsOneWidget);
     expect(find.textContaining('CatalogApp'), findsWidgets);
   });
@@ -20,7 +20,7 @@ void main() {
   testWidgets('renders one tile per entry with name and state count badge',
       (tester) async {
     await tester.pumpWidget(CatalogApp(
-      entries: () => [
+      entriesBuilder: () => [
         _entry('Button'),
         CatalogEntry(
           name: 'Card',
@@ -40,7 +40,7 @@ void main() {
   testWidgets('persistent search bar filters tiles by substring',
       (tester) async {
     await tester.pumpWidget(
-      CatalogApp(entries: () => [_entry('Button'), _entry('Card')]),
+      CatalogApp(entriesBuilder: () => [_entry('Button'), _entry('Card')]),
     );
 
     final field = find.byType(TextField);
@@ -55,7 +55,7 @@ void main() {
   testWidgets('shows no-match message when search has no results',
       (tester) async {
     await tester.pumpWidget(
-      CatalogApp(entries: () => [_entry('Button')]),
+      CatalogApp(entriesBuilder: () => [_entry('Button')]),
     );
     await tester.enterText(find.byType(TextField), 'zzz');
     await tester.pump();
@@ -66,13 +66,13 @@ void main() {
       'category chip strip appears only when entries provide categories',
       (tester) async {
     await tester.pumpWidget(
-      CatalogApp(entries: () => [_entry('Button')]),
+      CatalogApp(entriesBuilder: () => [_entry('Button')]),
     );
     expect(find.byType(FilterChip), findsNothing);
 
     await tester.pumpWidget(
       CatalogApp(
-        entries: () => [
+        entriesBuilder: () => [
           _entry('Button', category: 'Inputs'),
           _entry('Card', category: 'Surfaces'),
         ],
@@ -87,7 +87,7 @@ void main() {
   testWidgets('selecting a category filters the grid', (tester) async {
     await tester.pumpWidget(
       CatalogApp(
-        entries: () => [
+        entriesBuilder: () => [
           _entry('Button', category: 'Inputs'),
           _entry('Card', category: 'Surfaces'),
         ],
@@ -100,14 +100,14 @@ void main() {
   });
 
   testWidgets('tapping tile pushes DetailScreen', (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: () => [_entry('Button')]));
+    await tester.pumpWidget(CatalogApp(entriesBuilder: () => [_entry('Button')]));
     await tester.tap(find.text('Button'));
     await tester.pumpAndSettle();
     expect(find.byType(DetailScreen), findsOneWidget);
   });
 
   testWidgets('theme toggle flips MaterialApp.themeMode', (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: () => [_entry('Button')]));
+    await tester.pumpWidget(CatalogApp(entriesBuilder: () => [_entry('Button')]));
     final before =
         tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode;
     expect(before, ThemeMode.light);

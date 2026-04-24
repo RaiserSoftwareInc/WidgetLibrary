@@ -11,7 +11,7 @@ CatalogEntry _entry(String name, {String? category}) => CatalogEntry(
 void main() {
   testWidgets('grid surfaces expose stable Marionette keys', (tester) async {
     await tester.pumpWidget(CatalogApp(
-      entries: () => [
+      entriesBuilder: () => [
         _entry('Button', category: 'Inputs'),
         _entry('Card', category: 'Surfaces'),
       ],
@@ -32,7 +32,7 @@ void main() {
       'default': (_) => const Text('STATE-default'),
       'disabled': (_) => const Text('STATE-disabled'),
     },);
-    await tester.pumpWidget(CatalogApp(entries: () => [entry]));
+    await tester.pumpWidget(CatalogApp(entriesBuilder: () => [entry]));
     await tester.tap(find.text('Button'));
     await tester.pumpAndSettle();
 
@@ -46,7 +46,7 @@ void main() {
   });
 
   testWidgets('empty state exposes copy key', (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: () => const []));
+    await tester.pumpWidget(CatalogApp(entriesBuilder: () => const []));
     expect(find.byKey(const ValueKey('wl.empty_state.copy')), findsOneWidget);
   });
 }

@@ -5,7 +5,7 @@ import 'catalog.dart';
 
 void main() {
   runApp(CatalogApp(
-    entries: buildCatalog,
+    entriesBuilder: buildCatalog,
     lightTheme: ThemeData.light(useMaterial3: true),
     darkTheme: ThemeData.dark(useMaterial3: true),
   ));

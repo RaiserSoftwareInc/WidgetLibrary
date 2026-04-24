@@ -5,7 +5,19 @@ import 'screens/grid_screen.dart';
 import 'theme/theme_controller.dart';
 
 class CatalogApp extends StatefulWidget {
-  final List<CatalogEntry> Function() entries;
+  /// Static list of entries. Use this for the classic 0.5.x call site
+  /// (`entries: buildCatalog()`). Hot reload will NOT pick up edits to
+  /// entry defaults unless the app is restarted. For hot-reload-safe
+  /// registration, use [entriesBuilder] instead.
+  @Deprecated('Use entriesBuilder for hot-reload support — removed in 1.0.0')
+  final List<CatalogEntry>? entries;
+
+  /// Builder that returns the catalog on every frame. Invoked inside
+  /// `build()` so Flutter hot reload re-runs it and picks up edits to
+  /// `defaultValue`s and entry lists without a full app restart. Pass a
+  /// function reference: `entriesBuilder: buildCatalog`.
+  final List<CatalogEntry> Function()? entriesBuilder;
+
   final ThemeData? lightTheme;
   final ThemeData? darkTheme;
   final String title;
@@ -17,12 +29,27 @@ class CatalogApp extends StatefulWidget {
 
   const CatalogApp({
     super.key,
-    required this.entries,
+    @Deprecated('Use entriesBuilder for hot-reload support — removed in 1.0.0')
+    this.entries,
+    this.entriesBuilder,
     this.lightTheme,
     this.darkTheme,
     this.title = 'Widget Library',
     this.initialTheme = ThemeMode.system,
-  });
+  }) : assert(
+          entries != null || entriesBuilder != null,
+          'CatalogApp: provide entries (List) or entriesBuilder (Function)',
+        );
+
+  /// Internal: single-path accessor used by [GridScreen]. Prefers
+  /// [entriesBuilder] when both are supplied (caller opted in to the new
+  /// API); falls back to wrapping the legacy list.
+  List<CatalogEntry> Function() get _resolvedBuilder {
+    final builder = entriesBuilder;
+    if (builder != null) return builder;
+    final legacy = entries!;
+    return () => legacy;
+  }
 
   @override
   State<CatalogApp> createState() => _CatalogAppState();
@@ -58,7 +85,7 @@ class _CatalogAppState extends State<CatalogApp> {
             darkTheme: widget.darkTheme ?? ThemeData.dark(useMaterial3: true),
             themeMode: mode,
             home: GridScreen(
-              entriesBuilder: widget.entries,
+              entriesBuilder: widget._resolvedBuilder,
               title: widget.title,
             ),
           );

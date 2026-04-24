@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:widget_library/widget_library.dart';
 
 Future<void> _openDetailAndSpecs(WidgetTester tester, CatalogEntry entry) async {
-  await tester.pumpWidget(CatalogApp(entries: () => [entry]));
+  await tester.pumpWidget(CatalogApp(entriesBuilder: () => [entry]));
   await tester.tap(find.text(entry.name));
   await tester.pumpAndSettle();
   await tester.tap(find.byTooltip('Specs'));
@@ -49,7 +49,7 @@ void main() {
 
     await tester.pumpWidget(
       CatalogApp(
-        entries: () => [entry],
+        entriesBuilder: () => [entry],
         lightTheme: ThemeData(
           useMaterial3: true,
           colorScheme: const ColorScheme.light(primary: Color(0xFF123456)),

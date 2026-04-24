@@ -52,7 +52,7 @@ import 'package:my_app/theme.dart';
 import 'catalog.dart';
 
 void main() => runApp(CatalogApp(
-  entries: buildCatalog,              // function reference, not a call
+  entriesBuilder: buildCatalog,       // function reference — hot-reload safe
   lightTheme: appLight,
   darkTheme: appDark,
 ));
@@ -114,7 +114,10 @@ Then `cd tools/catalog && flutter create --platforms=android,ios .` to generate 
 
 ## Registering widgets
 
-`CatalogApp.entries` takes a `List<CatalogEntry> Function()`. Pass the reference, not a call — the shell invokes it on every build so hot reload picks up edits to defaults and entry lists without a full restart.
+`CatalogApp` accepts two shapes (provide exactly one):
+
+- `entriesBuilder: List<CatalogEntry> Function()` — **recommended.** Pass the reference, not a call. The shell invokes it on every build so hot reload picks up edits to defaults and entry lists without a full restart.
+- `entries: List<CatalogEntry>` — legacy 0.5.x call site (`entries: buildCatalog()`). Deprecated; hot reload will NOT pick up edits to entry defaults without a full restart. Removed in 1.0.0.
 
 Each entry is one of two flavors: **legacy** (fixed named states) or **live** (typed knobs wired to a builder).
 
@@ -194,6 +197,99 @@ builder: (ctx, v) => AtlasHeader(
 ```
 
 Live and legacy entries coexist in the same catalog — the shell branches on the entry type, so you can migrate one widget at a time.
+
+### Step-by-step: add knobs to a widget
+
+Use this recipe to convert any widget entry from fixed `states` to live tweakable controls.
+
+**1. Identify the parameters you want to expose.** Look at your widget's constructor. Each public `required` or named param is a candidate knob. Skip params derived from context (theme, localization, controllers) — those aren't knob material.
+
+Example — `PrimaryButton`:
+
+```dart
+class PrimaryButton extends StatelessWidget {
+  final String label;      // → StringKnob
+  final bool enabled;      // → BoolKnob
+  final bool loading;      // → BoolKnob
+  final VoidCallback? onTap; // skip — behavior, not visual state
+}
+```
+
+**2. Pick the right knob type per parameter.**
+
+| Parameter shape | Knob |
+|---|---|
+| `double` (continuous range: height, padding, radius, opacity) | `DoubleKnob(min:, max:, step: optional)` |
+| `int` (counts, line limits) | `IntKnob(min:, max:, step: 1)` |
+| `bool` (on/off flags) | `BoolKnob` |
+| `String` (label, hint, placeholder) | `StringKnob(hint: optional)` |
+| `enum` or fixed value set | `EnumKnob<T>(values: [...], labelOf: optional)` |
+| `Color` (backgrounds, tints, borders) | `ColorKnob(swatches: optional)` |
+| Nullable value (e.g. `double?`) | `BoolKnob` toggle + value knob; branch in builder |
+
+**3. Give each knob a stable `id`.** Use the constructor parameter name (`label`, `enabled`). The id is what the builder reads and what reconcile uses to preserve user-dragged values across hot reloads. Renaming an id counts as removing the old knob and adding a new one.
+
+**4. Convert the entry.** Replace `CatalogEntry(name:, states:)` with `CatalogEntry.live(name:, knobs:, builder:)`:
+
+```dart
+// Before
+CatalogEntry(
+  name: 'Primary Button',
+  states: {
+    'default':  (_) => const PrimaryButton(label: 'OK'),
+    'disabled': (_) => const PrimaryButton(label: 'OK', enabled: false),
+    'loading':  (_) => const PrimaryButton(label: 'OK', loading: true),
+  },
+),
+
+// After
+CatalogEntry.live(
+  name: 'Primary Button',
+  knobs: const [
+    StringKnob(id: 'label', label: 'Label', defaultValue: 'OK'),
+    BoolKnob(id: 'enabled', label: 'Enabled', defaultValue: true),
+    BoolKnob(id: 'loading', label: 'Loading', defaultValue: false),
+  ],
+  builder: (ctx, v) => PrimaryButton(
+    label: v.getString('label'),
+    enabled: v.getBool('enabled'),
+    loading: v.getBool('loading'),
+  ),
+),
+```
+
+`KnobValues` read methods: `getDouble`, `getInt`, `getBool`, `getString`, `getColor`, `getEnum<T>`, plus `valueOf(knob)` if you hold the `Knob` instance.
+
+**5. Switch to `entriesBuilder:` (once).** In `main.dart`, pass the catalog as a function reference so hot reload can re-run it:
+
+```dart
+runApp(CatalogApp(entriesBuilder: buildCatalog));   // not buildCatalog()
+```
+
+**6. Run and verify.** `flutter run -t tool/catalog/main.dart`. Open the entry. The panel renders below the preview. Drag / toggle / type — preview rebuilds live.
+
+**7. Tweak defaults with hot reload.** Edit any `defaultValue` in your entry file, save, press `r`. Knobs you haven't moved surface the new default; knobs you've dragged keep your value (use per-knob Reset to see the new default). No restart.
+
+**Picking ranges.** For `DoubleKnob` / `IntKnob`, pick `min`/`max` with ~2× your expected use range. Tight ranges feel sluggish; too-wide ranges make small adjustments fiddly. Use `step:` only when discrete increments matter (snap to 4dp grid, integer-only values).
+
+**Pitfalls.**
+- Ids must be unique per entry. Duplicates overwrite.
+- Changing a knob's type (e.g. `DoubleKnob` → `IntKnob`) with the same id on hot reload throws `StateError` — rename the id, or restart the app.
+- `const` on the `knobs:` list is required for the analyzer to treat knob instances as compile-time constants. Most knob fields (`min`, `max`, `defaultValue`, option lists) must be const-expressions too.
+
+### Migrating from 0.5.x
+
+Classic `entries: buildCatalog()` still works (wrapped internally, `@Deprecated`). For hot-reload-safe registration rename to `entriesBuilder` and drop the parens:
+
+```dart
+// 0.5.x (still works via deprecated entries:)
+runApp(CatalogApp(entries: buildCatalog()));
+
+// 0.6.1+ (recommended)
+runApp(CatalogApp(entriesBuilder: buildCatalog));
+```
+
+See [MIGRATION.md](MIGRATION.md) and [CHANGELOG.md](CHANGELOG.md).
 
 ## Theming
 
