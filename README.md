@@ -14,35 +14,70 @@ Alternative to Widgetbook with simpler mobile-first navigation: 2-col grid, pers
 - Not a design system. All colors and typography come from the `ThemeData` you pass in.
 - Not Widgetbook. Less powerful, fewer surprises.
 
-## Install
+## Integration
 
-Add as a dev-time dependency in a separate tool package (see [Integration](#integration) below). Do not add to your app's production `pubspec.yaml`.
+Two patterns. Pick based on whether your app already has platform scaffolding.
+
+### Pattern A: dev_dependency (recommended for existing apps)
+
+If your app already has configured `android/` + `ios/` dirs (desugaring, signing, google-services, `.env` assets, min SDK), reuse them. Add `widget_library` as a **dev dependency** and run the catalog via `-t`:
 
 ```yaml
-dependencies:
+# my_app/pubspec.yaml
+dev_dependencies:
   widget_library:
     git:
       url: https://github.com/RaiserSoftwareInc/WidgetLibrary.git
       ref: main
 ```
 
-## Integration
+Catalog entry file:
 
-Use the **tool package pattern** to keep the viewer completely out of production builds.
+```
+my_app/
+├── lib/                      # prod code — never imports widget_library
+└── tool/
+    └── catalog/
+        ├── main.dart         # CatalogApp entry
+        ├── catalog.dart      # List<CatalogEntry>
+        └── entries/          # one file per widget
+```
+
+**`tool/catalog/main.dart`:**
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:widget_library/widget_library.dart';
+import 'package:my_app/theme.dart';
+import 'catalog.dart';
+
+void main() => runApp(CatalogApp(
+  entries: buildCatalog(),
+  lightTheme: appLight,
+  darkTheme: appDark,
+));
+```
+
+**Run the viewer:** `flutter run -t tool/catalog/main.dart`
+**Build prod (unaffected):** `flutter build apk`
+
+Safety: `widget_library` is only imported from `tool/`, never from `lib/`. Tree-shaking strips it and its transitive code from release binaries. `widget_library` has no production deps beyond the Flutter SDK, so lockfile impact is marginal.
+
+### Pattern B: separate tool package
+
+If you want stronger isolation — no test/lint runs touching `widget_library`, fully separate lockfile — use a sub-project. This forces you to duplicate platform config (Gradle desugaring, signing, google-services, asset bundles) that your main app already has. Only worth it if you don't have them yet.
 
 ```
 my_app/
 ├── pubspec.yaml              # prod deps only — no widget_library here
-├── lib/
-│   ├── main.dart             # prod entry
-│   ├── theme.dart            # shared appLight / appDark
-│   └── widgets/              # reusable widgets
 └── tools/
     └── catalog/
         ├── pubspec.yaml      # depends on widget_library + ../.. (your app)
         ├── lib/
-        │   ├── main.dart     # catalog entry
-        │   └── catalog.dart  # List<CatalogEntry>
+        │   ├── main.dart
+        │   └── catalog.dart
+        ├── android/          # separate Gradle scaffold — mirror host config
+        └── ios/              # separate Xcode project
 ```
 
 **`tools/catalog/pubspec.yaml`:**
@@ -65,32 +100,24 @@ dependencies:
       ref: main
 ```
 
-**`tools/catalog/lib/main.dart`:**
+Then `cd tools/catalog && flutter create --platforms=android,ios .` to generate platform dirs, and re-apply any Gradle config your host app needs (desugaring, signing, etc). Run via `cd tools/catalog && flutter run`.
 
-```dart
-import 'package:flutter/material.dart';
-import 'package:widget_library/widget_library.dart';
-import 'package:my_app/theme.dart';
-import 'catalog.dart';
+### Which to pick
 
-void main() => runApp(CatalogApp(
-  entries: buildCatalog(),
-  lightTheme: appLight,
-  darkTheme: appDark,
-));
-```
-
-**Run the viewer:** `cd tools/catalog && flutter run`
-**Build prod (unaffected):** `cd my_app && flutter build apk`
-
-The prod app's `pubspec.yaml` never references `widget_library`, so the package cannot leak into release binaries.
+|                 | Pattern A (dev_dependency)          | Pattern B (tool package)   |
+| --------------- | ----------------------------------- | -------------------------- |
+| Platform config | inherited from host app             | must duplicate             |
+| Lockfile        | one (host's) gains `widget_library` | isolated                   |
+| Setup friction  | minimal                             | high                       |
+| Leak risk       | none (tree-shaken)                  | none                       |
+| Use when        | host app already configured         | greenfield / strict isolation |
 
 ## Registering widgets
 
 Each entry names a widget and maps named states to builders:
 
 ```dart
-// tools/catalog/lib/catalog.dart
+// tool/catalog/catalog.dart
 import 'package:flutter/material.dart';
 import 'package:widget_library/widget_library.dart';
 import 'package:my_app/widgets/primary_button.dart';
@@ -174,17 +201,17 @@ The in-app toggle always flips between light and dark regardless of `initialThem
 
 The shell is keyed for use with [Marionette MCP](https://marionette.leancode.co/) so an AI agent can drive the viewer: search, filter, open entries, switch states, toggle theme, read specs, take screenshots.
 
-**Consumer setup** in your `tools/catalog/`:
+**Consumer setup** (Pattern A shown; same idea for Pattern B):
 
 ```yaml
-# tools/catalog/pubspec.yaml
+# my_app/pubspec.yaml
 dev_dependencies:
   marionette_flutter: ^0.5.0
   marionette_mcp: ^0.5.0
 ```
 
 ```dart
-// tools/catalog/lib/main.dart
+// tool/catalog/main.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:marionette_flutter/marionette_flutter.dart';
@@ -201,7 +228,7 @@ void main() {
 }
 ```
 
-Run in debug mode, copy the VM service `ws://...` URL from `flutter run`, point your agent's MCP config at `dart run marionette_mcp`.
+Run `flutter run -t tool/catalog/main.dart` in debug mode, copy the VM service `ws://...` URL from the output, point your agent's MCP config at `dart run marionette_mcp`.
 
 **Keys exposed by the shell** (all `wl.*` namespaced):
 
