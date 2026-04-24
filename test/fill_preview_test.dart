@@ -17,7 +17,7 @@ void main() {
   testWidgets(
       'grid tile renders fill-width widget without infinite-constraint assertion',
       (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: [_reproEntry()]));
+    await tester.pumpWidget(CatalogApp(entries: () => [_reproEntry()]));
     expect(tester.takeException(), isNull);
     expect(find.text('Repro'), findsOneWidget);
   });
@@ -25,7 +25,7 @@ void main() {
   testWidgets(
       'detail screen renders fill-width widget and reports non-zero size',
       (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: [_reproEntry()]));
+    await tester.pumpWidget(CatalogApp(entries: () => [_reproEntry()]));
     await tester.tap(find.text('Repro'));
     await tester.pumpAndSettle();
 
@@ -48,14 +48,14 @@ void main() {
       'detail screen renders Stack(fit: expand) without infinite-constraint assertion',
       (tester) async {
     final entry = CatalogEntry(name: 'StackExpand', states: {
-      'default': (_) => Stack(
+      'default': (_) => const Stack(
             fit: StackFit.expand,
-            children: const [
+            children: [
               ColoredBox(color: Color(0xFF00FF00)),
             ],
           ),
     },);
-    await tester.pumpWidget(CatalogApp(entries: [entry]));
+    await tester.pumpWidget(CatalogApp(entries: () => [entry]));
     await tester.tap(find.text('StackExpand'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
@@ -74,7 +74,7 @@ void main() {
             ),
       },
     );
-    await tester.pumpWidget(CatalogApp(entries: [entry]));
+    await tester.pumpWidget(CatalogApp(entries: () => [entry]));
     await tester.tap(find.text('SmallFrame'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);

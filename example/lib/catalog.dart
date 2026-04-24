@@ -4,15 +4,19 @@ import 'package:widget_library/widget_library.dart';
 import 'widgets/primary_button.dart';
 
 List<CatalogEntry> buildCatalog() => [
-      CatalogEntry(
+      CatalogEntry.live(
         name: 'Primary Button',
         category: 'Buttons',
-        states: {
-          'default': (_) => const PrimaryButton(label: 'Tap me'),
-          'disabled': (_) =>
-              const PrimaryButton(label: 'Tap me', enabled: false),
-          'loading': (_) => const PrimaryButton(label: 'Tap me', loading: true),
-        },
+        knobs: const [
+          StringKnob(id: 'label', label: 'Label', defaultValue: 'Tap me'),
+          BoolKnob(id: 'enabled', label: 'Enabled', defaultValue: true),
+          BoolKnob(id: 'loading', label: 'Loading', defaultValue: false),
+        ],
+        builder: (ctx, v) => PrimaryButton(
+          label: v.getString('label'),
+          enabled: v.getBool('enabled'),
+          loading: v.getBool('loading'),
+        ),
       ),
       CatalogEntry(
         name: 'Chip',
