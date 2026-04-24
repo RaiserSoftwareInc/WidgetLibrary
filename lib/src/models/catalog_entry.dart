@@ -43,13 +43,21 @@ class CatalogEntry {
     this.previewSize = const Size(390, 844),
   })  : assert(knobs.isNotEmpty, 'CatalogEntry.live: knobs must not be empty'),
         knobs = List.unmodifiable(knobs),
+        // builder captured in _synthesizeLiveStates; can't use this.builder in init list
         builder = builder, // ignore: prefer_initializing_formals
-        states = Map.unmodifiable({
-          'live': (ctx) => builder(
-                ctx,
-                KnobValues({for (final k in knobs) k.id: k.defaultValue}),
-              ),
-        });
+        states = _synthesizeLiveStates(knobs, builder);
+
+  static Map<String, WidgetBuilder> _synthesizeLiveStates(
+    List<Knob> knobs,
+    Widget Function(BuildContext, KnobValues) builder,
+  ) {
+    final defaults = KnobValues({
+      for (final k in knobs) k.id: k.defaultValue,
+    });
+    return Map.unmodifiable({
+      'live': (ctx) => builder(ctx, defaults),
+    });
+  }
 
   bool get isLive => knobs != null && builder != null;
 }

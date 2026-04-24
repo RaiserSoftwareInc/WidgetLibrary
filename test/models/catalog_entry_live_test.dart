@@ -65,5 +65,38 @@ void main() {
         throwsAssertionError,
       );
     });
+
+    testWidgets('synthesized default state is stable against caller mutation',
+        (tester) async {
+      final knobs = <Knob>[
+        const DoubleKnob(
+          id: 'h',
+          label: 'Height',
+          defaultValue: 220,
+          min: 100,
+          max: 400,
+        ),
+      ];
+      final entry = CatalogEntry.live(
+        name: 'Header',
+        knobs: knobs,
+        builder: (ctx, v) => SizedBox(height: v.getDouble('h')),
+      );
+
+      // Mutate the caller's list AFTER constructing the entry.
+      knobs.clear();
+
+      // Synthesized state must still work with the original knob defaults.
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Builder(builder: (ctx) => entry.states['live']!(ctx)),
+        ),
+      );
+
+      expect(find.byType(SizedBox), findsOneWidget);
+      final rendered = tester.widget<SizedBox>(find.byType(SizedBox));
+      expect(rendered.height, 220.0);
+    });
   });
 }
