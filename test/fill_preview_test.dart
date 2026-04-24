@@ -48,9 +48,9 @@ void main() {
       'detail screen renders Stack(fit: expand) without infinite-constraint assertion',
       (tester) async {
     final entry = CatalogEntry(name: 'StackExpand', states: {
-      'default': (_) => Stack(
+      'default': (_) => const Stack(
             fit: StackFit.expand,
-            children: const [
+            children: [
               ColoredBox(color: Color(0xFF00FF00)),
             ],
           ),

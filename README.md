@@ -6,7 +6,7 @@ Alternative to Widgetbook with simpler mobile-first navigation: 2-col grid, pers
 
 ## What it is
 
-`widget_library` is a Flutter package exposing one widget — `CatalogApp` — that you feed a list of `CatalogEntry` objects (widget + named states). It renders a grid, detail view, search, and theme toggle around your widgets. That's it. No knobs, no device frames, no codegen, no persistence.
+`widget_library` is a Flutter package exposing one widget — `CatalogApp` — that you feed a builder returning `CatalogEntry` objects. Each entry is either a fixed set of named states or a set of **live knobs** (sliders, toggles, dropdowns, text, color, enum) that rebuild the preview in real time. It renders a grid, detail view, search, theme toggle, and knob panel around your widgets. No device frames, no codegen, no persistence.
 
 ## What it is not
 
@@ -52,7 +52,7 @@ import 'package:my_app/theme.dart';
 import 'catalog.dart';
 
 void main() => runApp(CatalogApp(
-  entries: buildCatalog(),
+  entries: buildCatalog,              // function reference, not a call
   lightTheme: appLight,
   darkTheme: appDark,
 ));
@@ -114,7 +114,11 @@ Then `cd tools/catalog && flutter create --platforms=android,ios .` to generate 
 
 ## Registering widgets
 
-Each entry names a widget and maps named states to builders:
+`CatalogApp.entries` takes a `List<CatalogEntry> Function()`. Pass the reference, not a call — the shell invokes it on every build so hot reload picks up edits to defaults and entry lists without a full restart.
+
+Each entry is one of two flavors: **legacy** (fixed named states) or **live** (typed knobs wired to a builder).
+
+### Legacy: fixed states
 
 ```dart
 // tool/catalog/catalog.dart
@@ -152,13 +156,52 @@ Rules:
 - `thumbnail` — optional `Widget`. When absent, the tile auto-renders the first state via `FittedBox`.
 - `previewSize` — optional `Size`, defaults to `Size(390, 844)`. Virtual viewport given to the widget when rendered. Widgets using `double.infinity`, `Stack(fit: expand)`, or full-bleed patterns resolve against these bounds instead of an infinite canvas. Override per-entry for widgets with a different natural footprint (e.g. a 120-px-wide tile).
 
+### Live: typed knobs
+
+Declare typed controls next to the preview. Dragging a slider (or toggling a switch, changing a dropdown, typing a string, picking a color, selecting an enum) rebuilds the preview live:
+
+```dart
+CatalogEntry.live(
+  name: 'Primary Button',
+  category: 'Buttons',
+  knobs: const [
+    StringKnob(id: 'label', label: 'Label', defaultValue: 'Tap me'),
+    BoolKnob(id: 'enabled', label: 'Enabled', defaultValue: true),
+    BoolKnob(id: 'loading', label: 'Loading', defaultValue: false),
+  ],
+  builder: (ctx, v) => PrimaryButton(
+    label: v.getString('label'),
+    enabled: v.getBool('enabled'),
+    loading: v.getBool('loading'),
+  ),
+);
+```
+
+Knob types: `DoubleKnob` (slider, `min`/`max`/optional `step`), `IntKnob` (discrete slider), `BoolKnob` (switch), `StringKnob` (text field, optional `hint`), `EnumKnob<T>` (dropdown over `values`, optional `labelOf`), `ColorKnob` (swatch strip, optional `swatches`). Each knob has a unique `id` read back via `KnobValues` (`v.getDouble(id)`, `v.getBool(id)`, `v.getEnum<T>(id)`, etc.).
+
+**Hot reload:** edit a `defaultValue` in your entry file and save. The shell re-invokes `buildCatalog`, reconciles the knob list, keeps any user-dragged values on matching ids, and seeds defaults for new ids. Use the in-panel `Reset` button to surface a changed default on a knob you've already moved.
+
+**Nullable parameters:** pair a `BoolKnob` with a value knob and branch in the builder:
+
+```dart
+knobs: const [
+  BoolKnob(id: 'autoInset', label: 'Auto safe-area', defaultValue: true),
+  DoubleKnob(id: 'topInset', label: 'Top inset', defaultValue: 24, min: 0, max: 80),
+],
+builder: (ctx, v) => AtlasHeader(
+  topInset: v.getBool('autoInset') ? null : v.getDouble('topInset'),
+);
+```
+
+Live and legacy entries coexist in the same catalog — the shell branches on the entry type, so you can migrate one widget at a time.
+
 ## Theming
 
 `CatalogApp` takes optional `lightTheme` and `darkTheme` `ThemeData`. Pass your real app themes:
 
 ```dart
 CatalogApp(
-  entries: buildCatalog(),
+  entries: buildCatalog,
   lightTheme: appLight,
   darkTheme: appDark,
 );
@@ -174,7 +217,7 @@ If you omit themes, defaults are `ThemeData.light(useMaterial3: true)` and `Them
 
 ```dart
 CatalogApp(
-  entries: buildCatalog(),
+  entries: buildCatalog,
   lightTheme: appLight,
   darkTheme: appDark,
   initialTheme: ThemeMode.system,  // default — follows OS at boot
@@ -192,7 +235,7 @@ The in-app toggle always flips between light and dark regardless of `initialThem
 - **Search** — persistent bar under AppBar. Case-insensitive substring match on `name`.
 - **Category filter** — chip strip, only shown when any entry defines a category.
 - **Theme toggle** — AppBar action, flips light/dark in-memory (no persistence).
-- **Detail** — `SegmentedButton` for ≤4 states, scrolling chip strip for >4.
+- **Detail** — legacy entries: `SegmentedButton` for ≤4 states, scrolling chip strip for >4. Live entries: inline split — preview on top (flex 3), knob panel below (flex 2) — with per-knob Reset and a global Reset-all action.
 - **Error handling** — `ErrorBoundary` wraps each state preview. A throwing builder renders inline error text + stack trace instead of crashing the viewer.
 - **Empty state** — copy-paste `CatalogEntry(...)` sample snippet.
 - **Specs panel** — tap the info icon in the detail AppBar to open a bottom sheet showing the preview's laid-out size, active theme tokens (colors + text styles), and a depth-limited widget tree with diagnostic properties. Useful for inspecting what a widget is actually composed of. Custom widgets show richer data when they override `debugFillProperties`.
@@ -224,7 +267,7 @@ void main() {
   } else {
     WidgetsFlutterBinding.ensureInitialized();
   }
-  runApp(CatalogApp(entries: buildCatalog()));
+  runApp(CatalogApp(entries: buildCatalog));
 }
 ```
 
@@ -240,6 +283,12 @@ Run `flutter run -t tool/catalog/main.dart` in debug mode, copy the VM service `
 | Theme toggle (both screens) | `wl.app_bar.theme_toggle` |
 | Specs button | `wl.app_bar.specs` |
 | Variant segment / chip | `wl.detail.variant.<state_key>` |
+| Knob panel root | `wl.detail.knob_panel` |
+| Knob row | `wl.detail.knob.<id>` |
+| Knob control (slider / switch / dropdown / text / swatch strip) | `wl.detail.knob.<id>.control` |
+| Knob readback (current value as text) | `wl.detail.knob.<id>.value` |
+| Knob reset | `wl.detail.knob.<id>.reset` |
+| Reset all knobs | `wl.detail.knobs.reset_all` |
 | Empty-state copy button | `wl.empty_state.copy` |
 
 **Your own widgets** need their own keys (e.g. `ValueKey('submit_button')`) for an agent to interact with them. The shell handles the navigation chrome; catalog entries handle their own.
@@ -255,10 +304,11 @@ Mobile only (Android + iOS). Desktop and web are out of scope.
 ## Constraints
 
 Intentional YAGNI:
-- No knobs or live prop tweaking.
 - No device/viewport preview frames.
 - No code generation or annotations.
-- No persistence of theme choice.
+- No persistence of theme choice or knob values across restarts.
+- No URL-shareable knob configurations.
+- No draggable split handle between preview and knob panel.
 - No golden tests.
 - No pub.dev release.
 
