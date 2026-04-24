@@ -1,0 +1,75 @@
+{
+  "planPath": "docs/superpowers/plans/2026-04-23-live-knobs.md",
+  "tasks": [
+    {
+      "id": 1,
+      "subject": "Task 1: Knob types + KnobValues",
+      "status": "pending",
+      "description": "**Goal:** Define sealed Knob<T> hierarchy, 6 typed subclasses, KnobValues accessor.\n\n```json:metadata\n{\"files\": [\"lib/src/knobs/knob.dart\", \"lib/src/knobs/knob_values.dart\", \"test/knobs/knob_values_test.dart\"], \"verifyCommand\": \"flutter test test/knobs/knob_values_test.dart\", \"acceptanceCriteria\": [\"Sealed Knob base with 6 subclasses\", \"KnobValues typed getters work\", \"Missing id throws StateError\"]}\n```"
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: KnobController",
+      "status": "pending",
+      "blockedBy": [1],
+      "description": "**Goal:** ChangeNotifier with reconcile for hot-reload safety.\n\n```json:metadata\n{\"files\": [\"lib/src/knobs/knob_controller.dart\", \"test/knobs/knob_controller_test.dart\"], \"verifyCommand\": \"flutter test test/knobs/knob_controller_test.dart\", \"acceptanceCriteria\": [\"Default seeding\", \"Reconcile preserves user values\", \"Type-incompatible reconcile throws\"]}\n```"
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: CatalogEntry.live",
+      "status": "pending",
+      "blockedBy": [1],
+      "description": "**Goal:** Add .live named ctor, legacy ctor untouched.\n\n```json:metadata\n{\"files\": [\"lib/src/models/catalog_entry.dart\", \"test/models/catalog_entry_live_test.dart\"], \"verifyCommand\": \"flutter test test/catalog_entry_test.dart test/models/catalog_entry_live_test.dart\", \"acceptanceCriteria\": [\"CatalogEntry.live compiles\", \"Legacy ctor unchanged\", \"isLive getter correct\"]}\n```"
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: Knob row widgets",
+      "status": "pending",
+      "blockedBy": [2],
+      "description": "**Goal:** 6 row widgets with Marionette keys.\n\n```json:metadata\n{\"files\": [\"lib/src/widgets/knob_rows/double_row.dart\", \"lib/src/widgets/knob_rows/int_row.dart\", \"lib/src/widgets/knob_rows/bool_row.dart\", \"lib/src/widgets/knob_rows/string_row.dart\", \"lib/src/widgets/knob_rows/enum_row.dart\", \"lib/src/widgets/knob_rows/color_row.dart\"], \"verifyCommand\": \"flutter analyze lib/src/widgets/knob_rows/\", \"acceptanceCriteria\": [\"6 row widgets\", \"Marionette keys present\"]}\n```"
+    },
+    {
+      "id": 5,
+      "subject": "Task 5: KnobPanel",
+      "status": "pending",
+      "blockedBy": [4],
+      "description": "**Goal:** Panel root dispatching by Knob subclass; global reset.\n\n```json:metadata\n{\"files\": [\"lib/src/widgets/knob_panel.dart\", \"test/widgets/knob_panel_test.dart\"], \"verifyCommand\": \"flutter test test/widgets/knob_panel_test.dart\", \"acceptanceCriteria\": [\"Dispatches all 6 row types\", \"Reactive via ListenableBuilder\", \"Reset-all works\"]}\n```"
+    },
+    {
+      "id": 6,
+      "subject": "Task 6: CatalogApp + GridScreen entriesBuilder",
+      "status": "pending",
+      "blockedBy": [3],
+      "description": "**Goal:** Breaking API: entries is List<CatalogEntry> Function().\n\n```json:metadata\n{\"files\": [\"lib/src/catalog_app.dart\", \"lib/src/screens/grid_screen.dart\", \"test/catalog_app_test.dart\"], \"verifyCommand\": \"flutter analyze lib/ && flutter test test/catalog_app_test.dart\", \"acceptanceCriteria\": [\"entries is builder fn only\", \"GridScreen invokes each build\", \"tests updated\"]}\n```"
+    },
+    {
+      "id": 7,
+      "subject": "Task 7: DetailScreen live branch + reassemble",
+      "status": "pending",
+      "blockedBy": [3, 5, 6],
+      "description": "**Goal:** DetailScreen split layout + reassemble-driven reconcile.\n\n```json:metadata\n{\"files\": [\"lib/src/screens/detail_screen.dart\", \"test/screens/detail_screen_live_test.dart\"], \"verifyCommand\": \"flutter test test/screens/ test/catalog_app_test.dart test/catalog_entry_test.dart\", \"acceptanceCriteria\": [\"Live branch with split layout\", \"reassemble reconciles\", \"Legacy regression-free\"]}\n```"
+    },
+    {
+      "id": 8,
+      "subject": "Task 8: Migrate example Primary Button",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Primary Button becomes .live; main.dart passes buildCatalog as fn.\n\n```json:metadata\n{\"files\": [\"example/lib/catalog.dart\", \"example/lib/main.dart\"], \"verifyCommand\": \"flutter analyze example/ && flutter test\", \"acceptanceCriteria\": [\"Primary Button is live\", \"Chip untouched\", \"Hot-reload verified manually\"]}\n```"
+    },
+    {
+      "id": 9,
+      "subject": "Task 9: Hot-reload simulation test + exports",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Reload test verifies reconcile policy; exports updated.\n\n```json:metadata\n{\"files\": [\"lib/widget_library.dart\", \"test/screens/detail_screen_reload_test.dart\"], \"verifyCommand\": \"flutter analyze && flutter test\", \"acceptanceCriteria\": [\"Exports correct\", \"Reload reconcile verified in widget test\"]}\n```"
+    },
+    {
+      "id": 10,
+      "subject": "Task 10: Final verification + README note",
+      "status": "pending",
+      "blockedBy": [8, 9],
+      "description": "**Goal:** Full-repo green pass + README Live knobs section.\n\n```json:metadata\n{\"files\": [\"README.md\"], \"verifyCommand\": \"flutter analyze && flutter test\", \"acceptanceCriteria\": [\"Repo fully green\", \"README documents .live\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-04-23"
+}

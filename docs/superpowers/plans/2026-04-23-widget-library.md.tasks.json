@@ -1,0 +1,61 @@
+{
+  "planPath": "docs/superpowers/plans/2026-04-23-widget-library.md",
+  "tasks": [
+    {
+      "id": 0,
+      "subject": "Task 0: Scaffold Flutter package and example app",
+      "status": "completed",
+      "description": "**Goal:** Flutter package skeleton in repo root, plus an example/ app with path dependency.\n\n**Files:** pubspec.yaml, analysis_options.yaml, lib/widget_library.dart, example/pubspec.yaml, example/lib/main.dart\n\n**Verify:** `flutter analyze`\n\n```json:metadata\n{\"files\":[\"pubspec.yaml\",\"analysis_options.yaml\",\"lib/widget_library.dart\",\"example/pubspec.yaml\",\"example/lib/main.dart\"],\"verifyCommand\":\"flutter analyze\",\"acceptanceCriteria\":[\"flutter pub get succeeds\",\"flutter analyze clean\",\"example builds\"]}\n```"
+    },
+    {
+      "id": 1,
+      "subject": "Task 1: CatalogEntry model",
+      "status": "completed",
+      "blockedBy": [0],
+      "description": "**Goal:** Immutable data class for named widget states.\n\n**Files:** lib/src/models/catalog_entry.dart, test/catalog_entry_test.dart\n\n**Verify:** `flutter test test/catalog_entry_test.dart`\n\n```json:metadata\n{\"files\":[\"lib/src/models/catalog_entry.dart\",\"lib/widget_library.dart\",\"test/catalog_entry_test.dart\"],\"verifyCommand\":\"flutter test test/catalog_entry_test.dart\",\"acceptanceCriteria\":[\"constructs\",\"preserves order\",\"asserts empty\"]}\n```"
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: ThemeController + CatalogTheme",
+      "status": "completed",
+      "blockedBy": [0],
+      "description": "**Goal:** Root theme state with toggle.\n\n**Files:** lib/src/theme/theme_controller.dart, test/theme_controller_test.dart\n\n**Verify:** `flutter test test/theme_controller_test.dart`\n\n```json:metadata\n{\"files\":[\"lib/src/theme/theme_controller.dart\",\"test/theme_controller_test.dart\"],\"verifyCommand\":\"flutter test test/theme_controller_test.dart\",\"acceptanceCriteria\":[\"toggle flips\",\"of returns\",\"throws when no ancestor\"]}\n```"
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: ErrorBoundary widget",
+      "status": "completed",
+      "blockedBy": [0],
+      "description": "**Goal:** Catch builder exceptions inline.\n\n**Files:** lib/src/widgets/error_boundary.dart, test/error_boundary_test.dart\n\n**Verify:** `flutter test test/error_boundary_test.dart`\n\n```json:metadata\n{\"files\":[\"lib/src/widgets/error_boundary.dart\",\"test/error_boundary_test.dart\"],\"verifyCommand\":\"flutter test test/error_boundary_test.dart\",\"acceptanceCriteria\":[\"renders on success\",\"shows error on throw\"]}\n```"
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: CatalogApp root widget",
+      "status": "completed",
+      "blockedBy": [1, 2],
+      "description": "**Goal:** Root MaterialApp wired with ThemeController.\n\n**Files:** lib/src/catalog_app.dart, lib/widget_library.dart, test/catalog_app_test.dart\n\n**Verify:** `flutter test test/catalog_app_test.dart`\n\n```json:metadata\n{\"files\":[\"lib/src/catalog_app.dart\",\"lib/widget_library.dart\",\"test/catalog_app_test.dart\"],\"verifyCommand\":\"flutter test test/catalog_app_test.dart\",\"acceptanceCriteria\":[\"empty builds\",\"themeMode tracks\",\"themes passthrough\"]}\n```"
+    },
+    {
+      "id": 5,
+      "subject": "Task 5: GridScreen",
+      "status": "completed",
+      "blockedBy": [4],
+      "description": "**Goal:** Searchable 2-col grid + theme toggle + nav to DetailScreen stub.\n\n**Files:** lib/src/screens/grid_screen.dart, lib/src/screens/detail_screen.dart (stub), lib/src/catalog_app.dart, test/grid_screen_test.dart\n\n**Verify:** `flutter test test/grid_screen_test.dart`\n\n```json:metadata\n{\"files\":[\"lib/src/screens/grid_screen.dart\",\"lib/src/screens/detail_screen.dart\",\"lib/src/catalog_app.dart\",\"test/grid_screen_test.dart\"],\"verifyCommand\":\"flutter test test/grid_screen_test.dart\",\"acceptanceCriteria\":[\"empty state\",\"tiles render\",\"search filters\",\"tap navigates\",\"theme toggles\"]}\n```"
+    },
+    {
+      "id": 6,
+      "subject": "Task 6: DetailScreen with chip selector",
+      "status": "completed",
+      "blockedBy": [5, 3],
+      "description": "**Goal:** Chip row + preview via ErrorBoundary + theme toggle.\n\n**Files:** lib/src/screens/detail_screen.dart, test/detail_screen_test.dart\n\n**Verify:** `flutter test test/detail_screen_test.dart`\n\n```json:metadata\n{\"files\":[\"lib/src/screens/detail_screen.dart\",\"test/detail_screen_test.dart\"],\"verifyCommand\":\"flutter test test/detail_screen_test.dart\",\"acceptanceCriteria\":[\"first state selected\",\"chip swaps\",\"error caught\",\"theme toggles\"]}\n```"
+    },
+    {
+      "id": 7,
+      "subject": "Task 7: Example app wiring + smoke run",
+      "status": "completed",
+      "blockedBy": [6],
+      "description": "**Goal:** Real catalog + sample widget + Android smoke test.\n\n**Files:** example/lib/main.dart, example/lib/catalog.dart, example/lib/widgets/primary_button.dart\n\n**Verify:** Manual smoke run.\n\n```json:metadata\n{\"files\":[\"example/lib/main.dart\",\"example/lib/catalog.dart\",\"example/lib/widgets/primary_button.dart\"],\"verifyCommand\":\"flutter run -d <device> (from example/)\",\"acceptanceCriteria\":[\"android boot\",\"grid renders\",\"nav works\",\"theme works\",\"search works\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-04-23"
+}
