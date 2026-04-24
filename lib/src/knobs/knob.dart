@@ -80,7 +80,10 @@ class EnumKnob<T> extends Knob<T> {
     required super.defaultValue,
     required this.values,
     this.labelOf,
-  }) : assert(values.length > 0, 'EnumKnob.values must not be empty');
+  });
+
+  String labelFor(Object? value) =>
+      labelOf == null ? '$value' : labelOf!(value as T);
 }
 
 class ColorKnob extends Knob<Color> {

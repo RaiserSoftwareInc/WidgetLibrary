@@ -9,7 +9,7 @@ class EnumRow<T> extends StatelessWidget {
 
   const EnumRow({super.key, required this.knob, required this.controller});
 
-  String _label(T v) => knob.labelOf?.call(v) ?? '$v';
+  String _label(Object? v) => knob.labelFor(v);
 
   @override
   Widget build(BuildContext context) {

@@ -2,6 +2,21 @@
 
 All notable changes documented here. Format loosely follows Keep a Changelog.
 
+## 0.6.2 — 2026-04-24
+
+### Fixed
+- **`EnumKnob<T>` runtime TypeError in detail screen.** The knob panel
+  dispatched rows via `EnumRow<dynamic>`, which erased `T` and caused
+  `labelOf?.call(value)` to fail with
+  `type '(MyEnum) => String' is not a subtype of type '((dynamic) => String)?'`
+  whenever a caller supplied a typed `labelOf`. Added `EnumKnob<T>.labelFor`,
+  a cast helper that runs inside the `T`-reified scope of the knob; the row
+  now routes all label lookups through it. `labelOf` field signature
+  unchanged — existing call sites keep working.
+- **`const EnumKnob(...)` now compiles.** Removed the non-const-evaluable
+  `values.length > 0` assert that blocked const construction and forced
+  callers into `prefer_const_constructors` lint noise on surrounding knobs.
+
 ## 0.6.1 — 2026-04-24
 
 ### Fixed
