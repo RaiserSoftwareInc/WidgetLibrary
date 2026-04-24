@@ -258,10 +258,13 @@ class _Tile extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        // TODO(Task 7): flip to DetailScreen(entryName: ..., entriesBuilder: ...)
-        //              once DetailScreen is rewritten to hot-reload-safe signature.
         onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => DetailScreen(entry: entry)),
+          MaterialPageRoute(
+            builder: (_) => DetailScreen(
+              entryName: entry.name,
+              entriesBuilder: entriesBuilder,
+            ),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
