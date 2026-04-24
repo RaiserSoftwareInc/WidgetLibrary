@@ -5,7 +5,7 @@ import 'screens/grid_screen.dart';
 import 'theme/theme_controller.dart';
 
 class CatalogApp extends StatefulWidget {
-  final List<CatalogEntry> entries;
+  final List<CatalogEntry> Function() entries;
   final ThemeData? lightTheme;
   final ThemeData? darkTheme;
   final String title;
@@ -57,7 +57,10 @@ class _CatalogAppState extends State<CatalogApp> {
             theme: widget.lightTheme ?? ThemeData.light(useMaterial3: true),
             darkTheme: widget.darkTheme ?? ThemeData.dark(useMaterial3: true),
             themeMode: mode,
-            home: GridScreen(entries: widget.entries, title: widget.title),
+            home: GridScreen(
+              entriesBuilder: widget.entries,
+              title: widget.title,
+            ),
           );
         },
       ),

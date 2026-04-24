@@ -17,7 +17,7 @@ void main() {
   testWidgets(
       'grid tile renders fill-width widget without infinite-constraint assertion',
       (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: [_reproEntry()]));
+    await tester.pumpWidget(CatalogApp(entries: () => [_reproEntry()]));
     expect(tester.takeException(), isNull);
     expect(find.text('Repro'), findsOneWidget);
   });
@@ -25,7 +25,7 @@ void main() {
   testWidgets(
       'detail screen renders fill-width widget and reports non-zero size',
       (tester) async {
-    await tester.pumpWidget(CatalogApp(entries: [_reproEntry()]));
+    await tester.pumpWidget(CatalogApp(entries: () => [_reproEntry()]));
     await tester.tap(find.text('Repro'));
     await tester.pumpAndSettle();
 
@@ -55,7 +55,7 @@ void main() {
             ],
           ),
     },);
-    await tester.pumpWidget(CatalogApp(entries: [entry]));
+    await tester.pumpWidget(CatalogApp(entries: () => [entry]));
     await tester.tap(find.text('StackExpand'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
@@ -74,7 +74,7 @@ void main() {
             ),
       },
     );
-    await tester.pumpWidget(CatalogApp(entries: [entry]));
+    await tester.pumpWidget(CatalogApp(entries: () => [entry]));
     await tester.tap(find.text('SmallFrame'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);

@@ -7,9 +7,13 @@ import '../widgets/error_boundary.dart';
 import 'detail_screen.dart';
 
 class GridScreen extends StatefulWidget {
-  final List<CatalogEntry> entries;
+  final List<CatalogEntry> Function() entriesBuilder;
   final String title;
-  const GridScreen({super.key, required this.entries, required this.title});
+  const GridScreen({
+    super.key,
+    required this.entriesBuilder,
+    required this.title,
+  });
 
   @override
   State<GridScreen> createState() => _GridScreenState();
@@ -20,32 +24,29 @@ class _GridScreenState extends State<GridScreen> {
   String _category = _allCategory;
   static const _allCategory = 'All';
 
-  List<String> get _categories {
-    final set = <String>{};
-    for (final e in widget.entries) {
-      final c = e.category;
-      if (c != null && c.isNotEmpty) set.add(c);
-    }
-    if (set.isEmpty) return const [];
-    return [_allCategory, ...set];
-  }
+  @override
+  Widget build(BuildContext context) {
+    final entries = widget.entriesBuilder();
+    final theme = CatalogTheme.of(context);
+    final cs = Theme.of(context).colorScheme;
 
-  List<CatalogEntry> get _filtered {
+    final categorySet = <String>{};
+    for (final e in entries) {
+      final c = e.category;
+      if (c != null && c.isNotEmpty) categorySet.add(c);
+    }
+    final cats = categorySet.isEmpty
+        ? const <String>[]
+        : [_allCategory, ...categorySet];
+
     final q = _query.trim().toLowerCase();
-    return widget.entries.where((e) {
+    final filtered = entries.where((e) {
       final catOk = _category == _allCategory || e.category == _category;
       final qOk = q.isEmpty || e.name.toLowerCase().contains(q);
       return catOk && qOk;
     }).toList();
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = CatalogTheme.of(context);
-    final cs = Theme.of(context).colorScheme;
-    final cats = _categories;
-    final hasEntries = widget.entries.isNotEmpty;
-    final filtered = _filtered;
+    final hasEntries = entries.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -81,7 +82,10 @@ class _GridScreenState extends State<GridScreen> {
                 ? const EmptyState()
                 : filtered.isEmpty
                     ? _NoMatches(query: _query)
-                    : _GridBody(entries: filtered),
+                    : _GridBody(
+                        entries: filtered,
+                        entriesBuilder: widget.entriesBuilder,
+                      ),
           ),
         ],
       ),
@@ -201,7 +205,8 @@ class _NoMatches extends StatelessWidget {
 
 class _GridBody extends StatelessWidget {
   final List<CatalogEntry> entries;
-  const _GridBody({required this.entries});
+  final List<CatalogEntry> Function() entriesBuilder;
+  const _GridBody({required this.entries, required this.entriesBuilder});
 
   @override
   Widget build(BuildContext context) {
@@ -214,14 +219,18 @@ class _GridBody extends StatelessWidget {
         childAspectRatio: 0.9,
       ),
       itemCount: entries.length,
-      itemBuilder: (context, i) => _Tile(entry: entries[i]),
+      itemBuilder: (context, i) => _Tile(
+        entry: entries[i],
+        entriesBuilder: entriesBuilder,
+      ),
     );
   }
 }
 
 class _Tile extends StatelessWidget {
   final CatalogEntry entry;
-  const _Tile({required this.entry});
+  final List<CatalogEntry> Function() entriesBuilder;
+  const _Tile({required this.entry, required this.entriesBuilder});
 
   @override
   Widget build(BuildContext context) {
@@ -249,6 +258,8 @@ class _Tile extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
+        // TODO(Task 7): flip to DetailScreen(entryName: ..., entriesBuilder: ...)
+        //              once DetailScreen is rewritten to hot-reload-safe signature.
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => DetailScreen(entry: entry)),
         ),
