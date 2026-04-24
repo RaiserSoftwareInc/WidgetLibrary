@@ -22,51 +22,79 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+  CatalogEntry? _entry;
   KnobController? _knobs;
   String _selectedState = '';
+  final GlobalKey _previewKey = GlobalKey();
 
-  CatalogEntry? _lookup() {
-    final list = widget.entriesBuilder();
-    for (final e in list) {
-      if (e.name == widget.entryName) return e;
-    }
-    return null;
+  @override
+  void initState() {
+    super.initState();
+    _syncEntry();
   }
 
-  CatalogEntry? _ensureState(CatalogEntry? entry) {
-    if (entry == null) return null;
-    if (entry.isLive) {
-      _knobs ??= KnobController(entry.knobs!);
-      _knobs!.reconcile(entry.knobs!);
-    } else {
-      _knobs = null;
-      if (!entry.states.containsKey(_selectedState)) {
-        _selectedState = entry.states.keys.first;
-      }
+  @override
+  void didUpdateWidget(covariant DetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entryName != widget.entryName ||
+        oldWidget.entriesBuilder != widget.entriesBuilder) {
+      _syncEntry();
     }
-    return entry;
   }
 
   @override
   void reassemble() {
     super.reassemble();
-    setState(() {
-      _ensureState(_lookup());
-    });
+    _syncEntry();
   }
 
-  void _showSpecs(GlobalKey previewKey) {
+  @override
+  void dispose() {
+    _knobs?.dispose();
+    super.dispose();
+  }
+
+  CatalogEntry? _lookup() {
+    for (final e in widget.entriesBuilder()) {
+      if (e.name == widget.entryName) return e;
+    }
+    return null;
+  }
+
+  void _syncEntry() {
+    final entry = _lookup();
+    _entry = entry;
+
+    if (entry == null || !entry.isLive) {
+      _knobs?.dispose();
+      _knobs = null;
+    } else {
+      if (_knobs == null) {
+        _knobs = KnobController(entry.knobs!);
+      } else {
+        _knobs!.reconcile(entry.knobs!);
+      }
+    }
+
+    if (entry != null && !entry.isLive) {
+      if (!entry.states.containsKey(_selectedState)) {
+        _selectedState = entry.states.keys.first;
+      }
+    }
+  }
+
+  void _showSpecs() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => SpecsPanel(previewKey: previewKey),
+      builder: (_) => SpecsPanel(previewKey: _previewKey),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final entry = _ensureState(_lookup());
+    final entry = _entry;
     final theme = CatalogTheme.of(context);
     final cs = Theme.of(context).colorScheme;
 
@@ -79,8 +107,6 @@ class _DetailScreenState extends State<DetailScreen> {
       );
     }
 
-    final previewKey = GlobalKey();
-
     return Scaffold(
       appBar: AppBar(
         title: Text(entry.name),
@@ -89,7 +115,7 @@ class _DetailScreenState extends State<DetailScreen> {
             key: const ValueKey('wl.app_bar.specs'),
             tooltip: 'Specs',
             icon: const Icon(Icons.info_outline),
-            onPressed: () => _showSpecs(previewKey),
+            onPressed: _showSpecs,
           ),
           IconButton(
             key: const ValueKey('wl.app_bar.theme_toggle'),
@@ -104,15 +130,16 @@ class _DetailScreenState extends State<DetailScreen> {
       body: entry.isLive
           ? _LiveBody(
               entry: entry,
+              // _syncEntry guarantees _knobs != null when entry.isLive.
               controller: _knobs!,
-              previewKey: previewKey,
+              previewKey: _previewKey,
               surface: cs.surfaceContainerLow,
             )
           : _LegacyBody(
               entry: entry,
               selected: _selectedState,
               onSelected: (k) => setState(() => _selectedState = k),
-              previewKey: previewKey,
+              previewKey: _previewKey,
               surface: cs.surfaceContainerLow,
               outline: cs.outlineVariant,
             ),
