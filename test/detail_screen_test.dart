@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:widget_library/widget_library.dart';
 import 'package:widget_library/src/screens/detail_screen.dart';
 
-Widget _host(CatalogEntry entry) => CatalogApp(entries: () => [entry]);
+Widget _host(CatalogEntry entry) => CatalogApp(entriesBuilder: () => [entry]);
 
 Future<void> _openDetail(WidgetTester tester, CatalogEntry entry) async {
   await tester.pumpWidget(_host(entry));
