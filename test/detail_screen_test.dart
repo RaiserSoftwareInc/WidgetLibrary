@@ -37,6 +37,17 @@ void main() {
     expect(find.text('STATE-default'), findsNothing);
   });
 
+  testWidgets('falls back to chip strip when any state label is long',
+      (tester) async {
+    final entry = CatalogEntry(name: 'LongLabels', states: {
+      'Default (on dark)': (_) => const Text('STATE-a'),
+      'Over aurora header': (_) => const Text('STATE-b'),
+    },);
+    await _openDetail(tester, entry);
+    expect(find.byType(SegmentedButton<String>), findsNothing);
+    expect(find.byType(ChoiceChip), findsNWidgets(2));
+  });
+
   testWidgets('falls back to chip strip when more than 4 states',
       (tester) async {
     final entry = CatalogEntry(name: 'Many', states: {

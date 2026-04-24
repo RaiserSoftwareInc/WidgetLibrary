@@ -95,9 +95,22 @@ class _VariantPicker extends StatelessWidget {
     required this.onChanged,
   });
 
+  static const _maxSegments = 4;
+  static const _maxLabelChars = 10;
+  static const _maxTotalChars = 28;
+
+  bool _fitsSegmented() {
+    if (keys.length > _maxSegments) return false;
+    final longest = keys.fold<int>(0, (m, k) => k.length > m ? k.length : m);
+    if (longest > _maxLabelChars) return false;
+    final total = keys.fold<int>(0, (s, k) => s + k.length);
+    if (total > _maxTotalChars) return false;
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (keys.length <= 4) {
+    if (_fitsSegmented()) {
       return SizedBox(
         width: double.infinity,
         child: SegmentedButton<String>(
