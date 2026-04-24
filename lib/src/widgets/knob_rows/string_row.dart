@@ -15,17 +15,40 @@ class StringRow extends StatefulWidget {
 
 class _StringRowState extends State<StringRow> {
   late final TextEditingController _text = TextEditingController(
-    text: widget.controller.values[widget.knob.id]! as String,
+    text: _currentModelValue(),
   );
+
+  String _currentModelValue() =>
+      widget.controller.values[widget.knob.id]! as String;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_syncFromModel);
+  }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_syncFromModel);
     _text.dispose();
     super.dispose();
   }
 
+  void _syncFromModel() {
+    final modelValue = _currentModelValue();
+    if (_text.text == modelValue) return;
+    // External change: reflect it without disturbing the user's cursor more
+    // than necessary. If the field still had focus, we place the caret at the
+    // end of the new value.
+    _text.value = TextEditingValue(
+      text: modelValue,
+      selection: TextSelection.collapsed(offset: modelValue.length),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final current = _currentModelValue();
     return Padding(
       key: ValueKey('wl.detail.knob.${widget.knob.id}'),
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
@@ -47,14 +70,11 @@ class _StringRowState extends State<StringRow> {
             key: ValueKey('wl.detail.knob.${widget.knob.id}.reset'),
             tooltip: 'Reset',
             icon: const Icon(Icons.restart_alt, size: 18),
-            onPressed: () {
-              widget.controller.reset(widget.knob.id);
-              _text.text = widget.knob.defaultValue;
-            },
+            onPressed: () => widget.controller.reset(widget.knob.id),
           ),
           Offstage(
             child: Text(
-              _text.text,
+              current,
               key: ValueKey('wl.detail.knob.${widget.knob.id}.value'),
             ),
           ),

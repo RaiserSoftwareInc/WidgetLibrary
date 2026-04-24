@@ -13,7 +13,8 @@ class EnumRow<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = controller.values[knob.id] as T;
+    final raw = controller.values[knob.id];
+    final value = knob.values.contains(raw) ? raw as T : knob.defaultValue;
 
     return Padding(
       key: ValueKey('wl.detail.knob.${knob.id}'),
