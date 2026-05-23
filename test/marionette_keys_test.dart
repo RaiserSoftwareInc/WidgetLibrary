@@ -49,4 +49,36 @@ void main() {
     await tester.pumpWidget(CatalogApp(entriesBuilder: () => const []));
     expect(find.byKey(const ValueKey('wl.empty_state.copy')), findsOneWidget);
   });
+
+  testWidgets('grid exposes screen root + result count keys', (tester) async {
+    await tester.pumpWidget(CatalogApp(
+      entriesBuilder: () => [
+        _entry('Button', category: 'Inputs'),
+        _entry('Card', category: 'Surfaces'),
+      ],
+    ),);
+
+    expect(find.byKey(const ValueKey('wl.grid_screen')), findsOneWidget);
+    final count = find.byKey(const ValueKey('wl.grid.result_count'));
+    expect(count, findsOneWidget);
+    expect(tester.widget<Text>(count).data, '2 results');
+  });
+
+  testWidgets('grid exposes no_matches key on dead-end search', (tester) async {
+    await tester.pumpWidget(CatalogApp(
+      entriesBuilder: () => [_entry('Button', category: 'Inputs')],
+    ),);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('wl.search_field')),
+      'zzzznope',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('wl.grid.no_matches')), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('wl.grid.result_count'))).data,
+      '0 results',
+    );
+  });
 }
