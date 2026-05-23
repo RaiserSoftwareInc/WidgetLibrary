@@ -69,6 +69,7 @@ void main() {
       entriesBuilder: () => [_entry('Button', category: 'Inputs')],
     ),);
 
+    expect(find.byKey(const ValueKey('wl.grid.result_count')), findsOneWidget);
     expect(
       tester.widget<Text>(find.byKey(const ValueKey('wl.grid.result_count'))).data,
       '1 result',
@@ -87,6 +88,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('wl.grid.no_matches')), findsOneWidget);
+    expect(find.byKey(const ValueKey('wl.grid.result_count')), findsOneWidget);
     expect(
       tester.widget<Text>(find.byKey(const ValueKey('wl.grid.result_count'))).data,
       '0 results',
