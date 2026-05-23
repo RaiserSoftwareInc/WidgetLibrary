@@ -64,6 +64,17 @@ void main() {
     expect(tester.widget<Text>(count).data, '2 results');
   });
 
+  testWidgets('grid result count uses singular for one match', (tester) async {
+    await tester.pumpWidget(CatalogApp(
+      entriesBuilder: () => [_entry('Button', category: 'Inputs')],
+    ),);
+
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('wl.grid.result_count'))).data,
+      '1 result',
+    );
+  });
+
   testWidgets('grid exposes no_matches key on dead-end search', (tester) async {
     await tester.pumpWidget(CatalogApp(
       entriesBuilder: () => [_entry('Button', category: 'Inputs')],
