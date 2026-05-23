@@ -117,7 +117,7 @@ Then `cd tools/catalog && flutter create --platforms=android,ios .` to generate 
 `CatalogApp` accepts two shapes (provide exactly one):
 
 - `entriesBuilder: List<CatalogEntry> Function()` — **recommended.** Pass the reference, not a call. The shell invokes it on every build so hot reload picks up edits to defaults and entry lists without a full restart.
-- `entries: List<CatalogEntry>` — legacy 0.5.x call site (`entries: buildCatalog()`). Deprecated; hot reload will NOT pick up edits to entry defaults without a full restart. Removed in 1.0.0.
+- `entries: List<CatalogEntry>` — legacy, `@Deprecated`. Still compiles and runs, but hot reload will NOT pick up edits to entry defaults without a full restart. Prefer `entriesBuilder`.
 
 Each entry is one of two flavors: **legacy** (fixed named states) or **live** (typed knobs wired to a builder).
 
@@ -277,27 +277,13 @@ runApp(CatalogApp(entriesBuilder: buildCatalog));   // not buildCatalog()
 - Changing a knob's type (e.g. `DoubleKnob` → `IntKnob`) with the same id on hot reload throws `StateError` — rename the id, or restart the app.
 - `const` on the `knobs:` list is required for the analyzer to treat knob instances as compile-time constants. Most knob fields (`min`, `max`, `defaultValue`, option lists) must be const-expressions too.
 
-### Migrating from 0.5.x
-
-Classic `entries: buildCatalog()` still works (wrapped internally, `@Deprecated`). For hot-reload-safe registration rename to `entriesBuilder` and drop the parens:
-
-```dart
-// 0.5.x (still works via deprecated entries:)
-runApp(CatalogApp(entries: buildCatalog()));
-
-// 0.6.1+ (recommended)
-runApp(CatalogApp(entriesBuilder: buildCatalog));
-```
-
-See [MIGRATION.md](MIGRATION.md) and [CHANGELOG.md](CHANGELOG.md).
-
 ## Theming
 
 `CatalogApp` takes optional `lightTheme` and `darkTheme` `ThemeData`. Pass your real app themes:
 
 ```dart
 CatalogApp(
-  entries: buildCatalog,
+  entriesBuilder: buildCatalog,
   lightTheme: appLight,
   darkTheme: appDark,
 );
@@ -313,7 +299,7 @@ If you omit themes, defaults are `ThemeData.light(useMaterial3: true)` and `Them
 
 ```dart
 CatalogApp(
-  entries: buildCatalog,
+  entriesBuilder: buildCatalog,
   lightTheme: appLight,
   darkTheme: appDark,
   initialTheme: ThemeMode.system,  // default — follows OS at boot
@@ -340,6 +326,8 @@ The in-app toggle always flips between light and dark regardless of `initialThem
 
 The shell is keyed for use with [Marionette MCP](https://marionette.leancode.co/) so an AI agent can drive the viewer: search, filter, open entries, switch states, toggle theme, read specs, take screenshots.
 
+> **Required:** the keys alone are inert. An agent can only attach and drive the viewer if the app initializes the Marionette binding — call `MarionetteBinding.ensureInitialized()` before `runApp` (debug-only, see below). Without it, the `wl.*` keys exist in the tree but no agent can reach them.
+
 **Consumer setup** (Pattern A shown; same idea for Pattern B):
 
 ```yaml
@@ -363,7 +351,7 @@ void main() {
   } else {
     WidgetsFlutterBinding.ensureInitialized();
   }
-  runApp(CatalogApp(entries: buildCatalog));
+  runApp(CatalogApp(entriesBuilder: buildCatalog));
 }
 ```
 
