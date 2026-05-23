@@ -100,6 +100,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
     if (entry == null) {
       return Scaffold(
+        key: const ValueKey('wl.detail_screen'),
         appBar: AppBar(title: Text(widget.entryName)),
         body: Center(
           child: Text("Entry '${widget.entryName}' not found"),
@@ -108,6 +109,7 @@ class _DetailScreenState extends State<DetailScreen> {
     }
 
     return Scaffold(
+      key: const ValueKey('wl.detail_screen'),
       appBar: AppBar(
         title: Text(entry.name),
         actions: [

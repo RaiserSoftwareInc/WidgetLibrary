@@ -49,6 +49,7 @@ class _GridScreenState extends State<GridScreen> {
     final hasEntries = entries.isNotEmpty;
 
     return Scaffold(
+      key: const ValueKey('wl.grid_screen'),
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
@@ -76,6 +77,20 @@ class _GridScreenState extends State<GridScreen> {
                 onSelected: (c) => setState(() => _category = c),
               ),
             Divider(height: 1, color: cs.outlineVariant),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${filtered.length} ${filtered.length == 1 ? 'result' : 'results'}',
+                  key: const ValueKey('wl.grid.result_count'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(color: cs.onSurfaceVariant),
+                ),
+              ),
+            ),
           ],
           Expanded(
             child: !hasEntries
@@ -180,6 +195,7 @@ class _NoMatches extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     return Center(
+      key: const ValueKey('wl.grid.no_matches'),
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(

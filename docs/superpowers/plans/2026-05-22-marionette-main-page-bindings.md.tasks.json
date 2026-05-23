@@ -1,0 +1,31 @@
+{
+  "planPath": "docs/superpowers/plans/2026-05-22-marionette-main-page-bindings.md",
+  "tasks": [
+    {
+      "id": 1,
+      "subject": "Task 1: Grid screen ValueKeys + visible result-count label",
+      "status": "completed",
+      "description": "**Goal:** Add `wl.grid_screen` (Scaffold root), `wl.grid.no_matches` (dead-end search), and a visible `wl.grid.result_count` label to the grid screen, driven by tests.\n\n**Files:**\n- Modify: lib/src/screens/grid_screen.dart\n- Test: test/marionette_keys_test.dart\n\n**Acceptance Criteria:**\n- wl.grid_screen on Scaffold\n- wl.grid.no_matches on dead-end search\n- wl.grid.result_count visible label reads 'N results'\n- existing grid keys intact\n\n**Verify:** flutter test test/marionette_keys_test.dart\n\n```json:metadata\n{\"files\": [\"lib/src/screens/grid_screen.dart\", \"test/marionette_keys_test.dart\"], \"verifyCommand\": \"flutter test test/marionette_keys_test.dart\", \"acceptanceCriteria\": [\"wl.grid_screen on Scaffold\", \"wl.grid.no_matches on dead-end search\", \"wl.grid.result_count visible label\", \"existing grid keys intact\"]}\n```"
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: Detail screen root ValueKey",
+      "status": "completed",
+      "description": "**Goal:** Add `wl.detail_screen` to the detail screen Scaffold(s).\n\n**Files:**\n- Modify: lib/src/screens/detail_screen.dart\n- Test: test/marionette_keys_test.dart\n\n**Acceptance Criteria:**\n- wl.detail_screen present after navigation\n- existing detail keys intact\n\n**Verify:** flutter test test/marionette_keys_test.dart\n\n```json:metadata\n{\"files\": [\"lib/src/screens/detail_screen.dart\", \"test/marionette_keys_test.dart\"], \"verifyCommand\": \"flutter test test/marionette_keys_test.dart\", \"acceptanceCriteria\": [\"wl.detail_screen present after navigation\", \"existing detail keys intact\"]}\n```"
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: Wire MarionetteBinding in the example app",
+      "status": "completed",
+      "description": "**Goal:** Example app initializes Marionette in debug, with marionette_flutter as example-only dev dependency.\n\n**Files:**\n- Modify: example/lib/main.dart\n- Modify: example/pubspec.yaml\n\n**Acceptance Criteria:**\n- marionette_flutter ^0.5.0 in dev_dependencies\n- kDebugMode-guarded MarionetteBinding.ensureInitialized()\n- pub get resolves\n- analyze clean\n\n**Verify:** cd example && flutter pub get && flutter analyze\n\n```json:metadata\n{\"files\": [\"example/lib/main.dart\", \"example/pubspec.yaml\"], \"verifyCommand\": \"cd example && flutter pub get && flutter analyze\", \"acceptanceCriteria\": [\"marionette_flutter ^0.5.0 in dev_dependencies\", \"kDebugMode-guarded init\", \"pub get resolves\", \"analyze clean\"]}\n```"
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: Docs — README keys table + CHANGELOG + version bump",
+      "status": "completed",
+      "blockedBy": [1, 2, 3],
+      "description": "**Goal:** Document the four new keys and record the release.\n\n**Files:**\n- Modify: README.md\n- Modify: CHANGELOG.md\n- Modify: pubspec.yaml\n\n**Acceptance Criteria:**\n- README table has 4 new key rows\n- CHANGELOG 0.7.0 section\n- version bumped to 0.7.0\n\n**Verify:** flutter test\n\n```json:metadata\n{\"files\": [\"README.md\", \"CHANGELOG.md\", \"pubspec.yaml\"], \"verifyCommand\": \"flutter test\", \"acceptanceCriteria\": [\"README table 4 new rows\", \"CHANGELOG 0.7.0\", \"version 0.7.0\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-05-22T00:00:01Z"
+}
