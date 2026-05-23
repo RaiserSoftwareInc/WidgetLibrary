@@ -2,6 +2,20 @@
 
 All notable changes documented here. Format loosely follows Keep a Changelog.
 
+## 0.7.0 — 2026-05-22
+
+### Added
+- **Marionette keys for the main (grid) page.** `wl.grid_screen` and
+  `wl.detail_screen` screen-root markers, `wl.grid.no_matches` for dead-end
+  searches, and a visible `wl.grid.result_count` label (e.g. `12 results`,
+  singular `1 result`). Lets an AI agent confirm the active screen, detect empty
+  searches, and read the match count without enumerating tiles.
+- **Example app wires `MarionetteBinding` in debug.** `example/lib/main.dart`
+  now calls `MarionetteBinding.ensureInitialized()` under `kDebugMode`, so the
+  demo is agent-drivable out of the box. `marionette_flutter ^0.5.0` is an
+  example-only dependency (the core library gains no new dependency); the
+  example's minimum Flutter is now 3.27.0 for Marionette's transitive deps.
+
 ## 0.6.2 — 2026-04-24
 
 ### Fixed

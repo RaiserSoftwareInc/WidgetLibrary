@@ -386,6 +386,10 @@ Run `flutter run -t tool/catalog/main.dart` in debug mode, copy the VM service `
 | Knob reset | `wl.detail.knob.<id>.reset` |
 | Reset all knobs | `wl.detail.knobs.reset_all` |
 | Empty-state copy button | `wl.empty_state.copy` |
+| Grid screen root | `wl.grid_screen` |
+| Detail screen root | `wl.detail_screen` |
+| No-matches state | `wl.grid.no_matches` |
+| Result count (visible label) | `wl.grid.result_count` |
 
 **Your own widgets** need their own keys (e.g. `ValueKey('submit_button')`) for an agent to interact with them. The shell handles the navigation chrome; catalog entries handle their own.
 
