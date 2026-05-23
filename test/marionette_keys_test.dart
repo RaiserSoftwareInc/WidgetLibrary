@@ -76,6 +76,17 @@ void main() {
     );
   });
 
+  testWidgets('detail exposes screen root key', (tester) async {
+    final entry = CatalogEntry(name: 'Button', states: {
+      'default': (_) => const Text('STATE-default'),
+    },);
+    await tester.pumpWidget(CatalogApp(entriesBuilder: () => [entry]));
+    await tester.tap(find.text('Button'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('wl.detail_screen')), findsOneWidget);
+  });
+
   testWidgets('grid exposes no_matches key on dead-end search', (tester) async {
     await tester.pumpWidget(CatalogApp(
       entriesBuilder: () => [_entry('Button', category: 'Inputs')],
