@@ -13,7 +13,7 @@ All notable changes documented here. Format loosely follows Keep a Changelog.
 - **Example app wires `MarionetteBinding` in debug.** `example/lib/main.dart`
   now calls `MarionetteBinding.ensureInitialized()` under `kDebugMode`, so the
   demo is agent-drivable out of the box. `marionette_flutter ^0.5.0` is an
-  example-only dependency (the core library gains no new dependency); the
+  example-only dev dependency (the core library gains no new dependency); the
   example's minimum Flutter is now 3.27.0 for Marionette's transitive deps.
 
 ## 0.6.2 — 2026-04-24

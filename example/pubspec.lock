@@ -100,7 +100,7 @@ packages:
     source: hosted
     version: "4.0.0"
   marionette_flutter:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: marionette_flutter
       sha256: cfcc9c3671f240a7a249578a3c1ec7c28425b397911b56436021f530881508a7
@@ -222,7 +222,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.6.2"
+    version: "0.7.0"
 sdks:
   dart: ">=3.9.0-0 <4.0.0"
   flutter: ">=3.27.0"

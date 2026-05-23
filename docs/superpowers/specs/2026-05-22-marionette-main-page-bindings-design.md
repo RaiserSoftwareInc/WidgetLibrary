@@ -92,9 +92,7 @@ the count of `filtered` entries, e.g. `12 results` (`1 result` singular). Styled
 with `textTheme.labelSmall` + `onSurfaceVariant`, low padding. Carries
 `ValueKey('wl.grid.result_count')`. Visible to humans and readable by the agent.
 
-When `filtered.isEmpty`, the `_NoMatches` widget renders instead — the count line
-is part of the header that is always present when `hasEntries`, so the agent can
-still read `0`-context via `wl.grid.no_matches`.
+When `filtered.isEmpty` but entries exist, the `_NoMatches` widget (`wl.grid.no_matches`) renders; an entirely empty catalog renders the `EmptyState` (`wl.empty_state.copy`) instead.
 
 ## Documentation
 
