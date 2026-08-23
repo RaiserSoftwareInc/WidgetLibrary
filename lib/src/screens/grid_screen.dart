@@ -24,20 +24,51 @@ class _GridScreenState extends State<GridScreen> {
   String _category = _allCategory;
   static const _allCategory = 'All';
 
-  @override
-  Widget build(BuildContext context) {
-    final entries = widget.entriesBuilder();
-    final theme = CatalogTheme.of(context);
-    final cs = Theme.of(context).colorScheme;
+  // Cached so a search keystroke, category tap, or theme toggle does not
+  // re-run the user's catalog builder and reconstruct every CatalogEntry.
+  // Refreshed on hot reload (reassemble) and when the builder changes.
+  late List<CatalogEntry> _entries;
+  late List<String> _cats;
 
+  @override
+  void initState() {
+    super.initState();
+    _refreshEntries();
+  }
+
+  @override
+  void didUpdateWidget(covariant GridScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entriesBuilder != widget.entriesBuilder) {
+      _refreshEntries();
+    }
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    _refreshEntries();
+  }
+
+  void _refreshEntries() {
+    _entries = widget.entriesBuilder();
     final categorySet = <String>{};
-    for (final e in entries) {
+    for (final e in _entries) {
       final c = e.category;
       if (c != null && c.isNotEmpty) categorySet.add(c);
     }
-    final cats = categorySet.isEmpty
+    _cats = categorySet.isEmpty
         ? const <String>[]
         : [_allCategory, ...categorySet];
+    if (!_cats.contains(_category)) _category = _allCategory;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = _entries;
+    final cats = _cats;
+    final theme = CatalogTheme.of(context);
+    final cs = Theme.of(context).colorScheme;
 
     final q = _query.trim().toLowerCase();
     final filtered = entries.where((e) {
@@ -108,16 +139,40 @@ class _GridScreenState extends State<GridScreen> {
   }
 }
 
-class _SearchBar extends StatelessWidget {
+class _SearchBar extends StatefulWidget {
   final String value;
   final ValueChanged<String> onChanged;
   const _SearchBar({required this.value, required this.onChanged});
 
   @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.value);
+
+  @override
+  void didUpdateWidget(covariant _SearchBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != _controller.text) {
+      _controller.value = TextEditingValue(
+        text: widget.value,
+        selection: TextSelection.collapsed(offset: widget.value.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final controller = TextEditingController(text: value)
-      ..selection = TextSelection.collapsed(offset: value.length);
+    final controller = _controller;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 10),
       child: Container(
@@ -136,7 +191,7 @@ class _SearchBar extends StatelessWidget {
               child: TextField(
                 key: const ValueKey('wl.search_field'),
                 controller: controller,
-                onChanged: onChanged,
+                onChanged: widget.onChanged,
                 decoration: const InputDecoration(
                   hintText: 'Search widgets',
                   border: InputBorder.none,
@@ -272,7 +327,7 @@ class _Tile extends StatelessWidget {
         side: BorderSide(color: cs.outlineVariant),
         borderRadius: BorderRadius.circular(10),
       ),
-      clipBehavior: Clip.antiAlias,
+      clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
@@ -289,7 +344,15 @@ class _Tile extends StatelessWidget {
               child: Container(
                 color: cs.surfaceContainerLow,
                 padding: const EdgeInsets.all(12),
-                child: IgnorePointer(child: Center(child: preview)),
+                // RepaintBoundary isolates each tile's paint. TickerMode
+                // freezes animations in thumbnails so many visible tiles do
+                // not rebuild every frame.
+                child: RepaintBoundary(
+                  child: TickerMode(
+                    enabled: false,
+                    child: IgnorePointer(child: Center(child: preview)),
+                  ),
+                ),
               ),
             ),
             Container(

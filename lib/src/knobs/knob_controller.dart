@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
@@ -15,7 +17,7 @@ class KnobController extends ChangeNotifier {
   }
 
   List<Knob> get knobs => _knobs;
-  Map<String, Object?> get values => Map.unmodifiable(_values);
+  Map<String, Object?> get values => UnmodifiableMapView(_values);
   KnobValues get readOnly => KnobValues(_values);
 
   void set(String id, Object? value) {

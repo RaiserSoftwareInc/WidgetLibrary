@@ -2,6 +2,25 @@
 
 All notable changes documented here. Format loosely follows Keep a Changelog.
 
+## 0.7.1 — 2026-08-22
+
+### Changed
+- **Grid caches the catalog.** `GridScreen` calls `entriesBuilder()` once at
+  mount, on hot reload (`reassemble`), and when the builder changes. A search
+  keystroke, category tap, or theme toggle no longer reconstructs every
+  `CatalogEntry`. Tiles keep a stable entry identity so unchanged tiles skip
+  rebuilds.
+- **Grid thumbnails freeze animations.** Each tile preview sits inside
+  `TickerMode(enabled: false)` and a `RepaintBoundary`. Animated widgets show
+  their first frame in the grid; the detail screen still animates. Tile clip
+  is `Clip.hardEdge` instead of `Clip.antiAlias`.
+- **`KnobController.values` returns a view.** `UnmodifiableMapView` instead of
+  a `Map.unmodifiable` copy on every read.
+
+### Fixed
+- **Search bar controller leak.** `_SearchBar` created a new
+  `TextEditingController` on every build and never disposed it.
+
 ## 0.7.0 — 2026-05-22
 
 ### Added
