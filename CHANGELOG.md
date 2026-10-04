@@ -2,6 +2,21 @@
 
 All notable changes documented here. Format loosely follows Keep a Changelog.
 
+## 0.7.3 — 2026-10-03
+
+### Changed
+- **Detail screen reuses the grid's entry.** A grid tile passes its cached
+  `CatalogEntry` to `DetailScreen`, so opening an entry no longer calls
+  `entriesBuilder()` and reconstructs the whole catalog. Hot reload
+  (`reassemble`) and a builder change still look the entry up again by name.
+- **Grid filters outside `build`.** Lowercase names are computed once when the
+  catalog is cached. The filtered list is recomputed only on a search
+  keystroke or a category tap, not on every rebuild. A theme toggle no longer
+  re-filters.
+- **Legacy `entries:` keeps one builder identity.** `CatalogApp` resolves the
+  deprecated list into a builder once instead of on every build, so a theme
+  toggle no longer resets the grid cache for 0.5.x call sites.
+
 ## 0.7.2 — 2026-10-03
 
 ### Changed
