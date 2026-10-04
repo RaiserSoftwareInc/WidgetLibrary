@@ -36,16 +36,16 @@ void main() {
     );
 
     // Call-site passes Object? — the regression scenario.
-    final Object? raw = _Variant.b;
+    const Object raw = _Variant.b;
     expect(knob.labelFor(raw), 'B');
   });
 
   test('EnumKnob.labelFor falls back to toString when labelOf null', () {
-    final knob = EnumKnob<_Variant>(
+    const knob = EnumKnob<_Variant>(
       id: 'v',
       label: 'Variant',
       defaultValue: _Variant.a,
-      values: const [_Variant.a, _Variant.b],
+      values: [_Variant.a, _Variant.b],
     );
     expect(knob.labelFor(_Variant.a), '_Variant.a');
   });

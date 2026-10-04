@@ -32,6 +32,17 @@ void main() {
       expect(n, 1);
     });
 
+    test('set with the same value does not notify', () {
+      final c = KnobController([height]);
+      var n = 0;
+      c.addListener(() => n++);
+      c.set('height', 220.0);
+      expect(n, 0);
+      c.set('height', 300.0);
+      c.set('height', 300.0);
+      expect(n, 1);
+    });
+
     test('reset restores default', () {
       final c = KnobController([height]);
       c.set('height', 300.0);

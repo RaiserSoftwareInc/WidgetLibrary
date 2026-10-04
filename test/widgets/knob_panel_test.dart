@@ -73,4 +73,54 @@ void main() {
 
     expect(c.values['h'], 200.0);
   });
+
+  testWidgets('set updates only that knob; reset all restores every readback',
+      (tester) async {
+    final c = KnobController(const [
+      DoubleKnob(
+        id: 'h',
+        label: 'Height',
+        defaultValue: 200,
+        min: 100,
+        max: 400,
+      ),
+      BoolKnob(id: 'on', label: 'Enabled', defaultValue: true),
+    ]);
+    await _pump(tester, KnobPanel(controller: c));
+    final h = find.byKey(const ValueKey('wl.detail.knob.h.value'));
+    final on = find.byKey(const ValueKey('wl.detail.knob.on.value'));
+
+    c.set('on', false);
+    await tester.pump();
+    expect(tester.widget<Text>(h).data, '200.0');
+    expect(tester.widget<Text>(on).data, 'off');
+
+    c.set('h', 300.0);
+    await tester.pump();
+    expect(tester.widget<Text>(h).data, '300.0');
+
+    await tester.tap(find.byKey(const ValueKey('wl.detail.knobs.reset_all')));
+    await tester.pump();
+    expect(tester.widget<Text>(h).data, '200.0');
+    expect(tester.widget<Text>(on).data, 'on');
+  });
+
+  testWidgets('reconcile adds and removes rows', (tester) async {
+    const h = DoubleKnob(
+      id: 'h',
+      label: 'Height',
+      defaultValue: 200,
+      min: 100,
+      max: 400,
+    );
+    const on = BoolKnob(id: 'on', label: 'Enabled', defaultValue: true);
+    final c = KnobController(const [h]);
+    await _pump(tester, KnobPanel(controller: c));
+
+    c.reconcile(const [on]);
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('wl.detail.knob.h')), findsNothing);
+    expect(find.byKey(const ValueKey('wl.detail.knob.on')), findsOneWidget);
+  });
 }
