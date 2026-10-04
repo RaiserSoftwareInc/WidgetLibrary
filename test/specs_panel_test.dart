@@ -63,4 +63,38 @@ void main() {
 
     expect(find.text('#123456'), findsOneWidget);
   });
+
+  testWidgets('Specs sections do not rebuild while the sheet is dragged',
+      (tester) async {
+    final entry = CatalogEntry(name: 'Box', states: {
+      'default': (_) => const SizedBox(width: 123, height: 45),
+    },);
+
+    await _openDetailAndSpecs(tester, entry);
+
+    final sizeRow = find.byWidgetPredicate(
+      (w) => w is SelectableText && (w.data ?? '').contains('123.0 × 45.0'),
+    );
+    final sheet = find.byType(ListView).last;
+    final title = find.text('Specs').last;
+    final sizeBefore = tester.widget(sizeRow);
+    final titleTopBefore = tester.getTopLeft(title);
+
+    // Dragging the sheet content changes its extent, which makes
+    // DraggableScrollableSheet re-invoke its builder on every frame.
+    await tester.drag(sheet, const Offset(0, -200));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(title), isNot(titleTopBefore));
+
+    final treeLine = find.byWidgetPredicate(
+      (w) => w is Text && (w.data ?? '').contains('KeyedSubtree'),
+    );
+    final treeBefore = tester.widget(treeLine);
+
+    await tester.drag(sheet, const Offset(0, 100));
+    await tester.pumpAndSettle();
+
+    expect(identical(sizeBefore, tester.widget(sizeRow)), isTrue);
+    expect(identical(treeBefore, tester.widget(treeLine)), isTrue);
+  });
 }
