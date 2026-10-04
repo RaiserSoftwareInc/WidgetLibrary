@@ -94,4 +94,55 @@ void main() {
     final after = tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode;
     expect(after, ThemeMode.dark);
   });
+
+  testWidgets('opening a tile reuses the cached entry (no builder re-run)',
+      (tester) async {
+    var calls = 0;
+    await tester.pumpWidget(CatalogApp(
+      entriesBuilder: () {
+        calls++;
+        return [
+          CatalogEntry(name: 'Button', states: {
+            'default': (_) => const Text('STATE-default'),
+            'disabled': (_) => const Text('STATE-disabled'),
+          },),
+        ];
+      },
+    ),);
+    expect(calls, 1);
+
+    await tester.tap(find.text('Button'));
+    await tester.pumpAndSettle();
+
+    expect(calls, 1);
+    expect(find.byType(DetailScreen), findsOneWidget);
+    expect(find.text('STATE-default'), findsOneWidget);
+  });
+
+  testWidgets('hot reload re-runs the builder and shows edited entry',
+      (tester) async {
+    var label = 'BEFORE';
+    await tester.pumpWidget(CatalogApp(
+      entriesBuilder: () {
+        // Read at entry construction, so an old entry keeps the old text.
+        final text = 'STATE-$label';
+        return [
+          CatalogEntry(name: 'Button', states: {'default': (_) => Text(text)}),
+        ];
+      },
+    ),);
+    await tester.tap(find.text('Button'));
+    await tester.pumpAndSettle();
+    expect(find.text('STATE-BEFORE'), findsOneWidget);
+
+    label = 'AFTER';
+    // reassembleApplication waits for a frame; pump so the frame runs.
+    final reassembled = tester.binding.reassembleApplication();
+    await tester.pump();
+    await reassembled;
+    await tester.pumpAndSettle();
+
+    expect(find.text('STATE-AFTER'), findsOneWidget);
+    expect(find.text('STATE-BEFORE'), findsNothing);
+  });
 }

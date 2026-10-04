@@ -59,6 +59,18 @@ class _CatalogAppState extends State<CatalogApp> {
   late final ThemeController _controller =
       ThemeController(initial: _resolveInitial(widget.initialTheme));
 
+  // Stable identity, so a theme toggle does not reset GridScreen's cache.
+  late List<CatalogEntry> Function() _builder = widget._resolvedBuilder;
+
+  @override
+  void didUpdateWidget(covariant CatalogApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entriesBuilder != widget.entriesBuilder ||
+        oldWidget.entries != widget.entries) {
+      _builder = widget._resolvedBuilder;
+    }
+  }
+
   static ThemeMode _resolveInitial(ThemeMode mode) {
     if (mode != ThemeMode.system) return mode;
     final brightness =
@@ -85,7 +97,7 @@ class _CatalogAppState extends State<CatalogApp> {
             darkTheme: widget.darkTheme ?? ThemeData.dark(useMaterial3: true),
             themeMode: mode,
             home: GridScreen(
-              entriesBuilder: widget._resolvedBuilder,
+              entriesBuilder: _builder,
               title: widget.title,
             ),
           );

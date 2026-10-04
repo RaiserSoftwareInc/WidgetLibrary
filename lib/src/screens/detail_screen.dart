@@ -11,10 +11,14 @@ class DetailScreen extends StatefulWidget {
   final String entryName;
   final List<CatalogEntry> Function() entriesBuilder;
 
+  /// Grid's cached entry for the first build; hot reload re-looks it up.
+  final CatalogEntry? entry;
+
   const DetailScreen({
     super.key,
     required this.entryName,
     required this.entriesBuilder,
+    this.entry,
   });
 
   @override
@@ -30,7 +34,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    _syncEntry();
+    _syncEntry(widget.entry ?? _lookup());
   }
 
   @override
@@ -38,14 +42,14 @@ class _DetailScreenState extends State<DetailScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.entryName != widget.entryName ||
         oldWidget.entriesBuilder != widget.entriesBuilder) {
-      _syncEntry();
+      _syncEntry(_lookup());
     }
   }
 
   @override
   void reassemble() {
     super.reassemble();
-    _syncEntry();
+    _syncEntry(_lookup());
   }
 
   @override
@@ -61,8 +65,7 @@ class _DetailScreenState extends State<DetailScreen> {
     return null;
   }
 
-  void _syncEntry() {
-    final entry = _lookup();
+  void _syncEntry(CatalogEntry? entry) {
     _entry = entry;
 
     if (entry == null || !entry.isLive) {
