@@ -32,6 +32,7 @@ class KnobController extends ChangeNotifier {
         'incompatible with ${knob.runtimeType} for id "$id"',
       );
     }
+    if (_values[id] == value) return;
     _values[id] = value;
     notifyListeners();
   }

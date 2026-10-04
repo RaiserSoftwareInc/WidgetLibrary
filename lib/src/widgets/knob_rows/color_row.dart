@@ -23,6 +23,7 @@ class ColorRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final value = controller.values[knob.id]! as Color;
     final swatches = knob.swatches ?? _defaultSwatches;
+    final cs = Theme.of(context).colorScheme;
 
     return Padding(
       key: ValueKey('wl.detail.knob.${knob.id}'),
@@ -69,9 +70,7 @@ class ColorRow extends StatelessWidget {
                       color: c,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: selected
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outlineVariant,
+                        color: selected ? cs.primary : cs.outlineVariant,
                         width: selected ? 2 : 1,
                       ),
                     ),

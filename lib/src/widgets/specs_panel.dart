@@ -9,6 +9,16 @@ class SpecsPanel extends StatelessWidget {
     final ctx = previewKey.currentContext;
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    // Built once per SpecsPanel build, outside the sheet builder. The tree
+    // walk runs here, not in a build method, so a sheet rebuild reuses the
+    // same widget instances and Flutter skips the sections.
+    final List<Widget> sections = [
+      _SizeSection(previewContext: ctx),
+      const SizedBox(height: 16),
+      _ThemeSection(source: context),
+      const SizedBox(height: 16),
+      _TreeSection(lines: ctx == null ? const [] : _walk(ctx)),
+    ];
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -46,13 +56,7 @@ class SpecsPanel extends StatelessWidget {
                 child: ListView(
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                  children: [
-                    _SizeSection(previewContext: ctx),
-                    const SizedBox(height: 16),
-                    _ThemeSection(source: context),
-                    const SizedBox(height: 16),
-                    _TreeSection(previewContext: ctx),
-                  ],
+                  children: sections,
                 ),
               ),
             ],
@@ -185,41 +189,40 @@ class _ThemeSection extends StatelessWidget {
   }
 }
 
-class _TreeSection extends StatelessWidget {
-  final BuildContext? previewContext;
-  const _TreeSection({required this.previewContext});
+const _maxDepth = 6;
+const _maxNodes = 40;
 
-  static const _maxDepth = 6;
-  static const _maxNodes = 40;
-
-  List<_TreeLine> _walk(BuildContext ctx) {
-    final lines = <_TreeLine>[];
-    void visit(Element e, int depth) {
-      if (lines.length >= _maxNodes || depth > _maxDepth) return;
-      final node = e.widget.toDiagnosticsNode();
-      final props = node
-          .getProperties()
-          .where((p) => !p.isFiltered(DiagnosticLevel.info))
-          .take(3)
-          .map((p) => p.toString())
-          .join(', ');
-      lines.add(_TreeLine(
-        depth: depth,
-        name: e.widget.runtimeType.toString(),
-        props: props,
-      ),);
-      e.visitChildren((c) => visit(c, depth + 1));
-    }
-
-    visit(ctx as Element, 0);
-    return lines;
+List<_TreeLine> _walk(BuildContext ctx) {
+  final lines = <_TreeLine>[];
+  void visit(Element e, int depth) {
+    if (lines.length >= _maxNodes || depth > _maxDepth) return;
+    final node = e.widget.toDiagnosticsNode();
+    final props = node
+        .getProperties()
+        .where((p) => !p.isFiltered(DiagnosticLevel.info))
+        .take(3)
+        .map((p) => p.toString())
+        .join(', ');
+    lines.add(_TreeLine(
+      depth: depth,
+      name: e.widget.runtimeType.toString(),
+      props: props,
+    ),);
+    e.visitChildren((c) => visit(c, depth + 1));
   }
+
+  visit(ctx as Element, 0);
+  return lines;
+}
+
+class _TreeSection extends StatelessWidget {
+  final List<_TreeLine> lines;
+  const _TreeSection({required this.lines});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final lines = previewContext == null ? const <_TreeLine>[] : _walk(previewContext!);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
