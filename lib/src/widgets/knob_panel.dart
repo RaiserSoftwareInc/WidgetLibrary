@@ -7,6 +7,7 @@ import 'knob_rows/color_row.dart';
 import 'knob_rows/double_row.dart';
 import 'knob_rows/enum_row.dart';
 import 'knob_rows/int_row.dart';
+import 'knob_rows/knob_value_builder.dart';
 import 'knob_rows/string_row.dart';
 
 class KnobPanel extends StatefulWidget {
@@ -47,19 +48,24 @@ class _KnobPanelState extends State<KnobPanel> {
     setState(() {});
   }
 
+  // Each row rebuilds only when its own value changes.
   Widget _rowFor(Knob knob) {
     final controller = widget.controller;
-    return switch (knob) {
-      DoubleKnob() => DoubleRow(knob: knob, controller: controller),
-      IntKnob() => IntRow(knob: knob, controller: controller),
-      BoolKnob() => BoolRow(knob: knob, controller: controller),
-      StringKnob() => StringRow(knob: knob, controller: controller),
-      ColorKnob() => ColorRow(knob: knob, controller: controller),
-      EnumKnob<dynamic>() => EnumRow<dynamic>(
-          knob: knob,
-          controller: controller,
-        ),
-    };
+    return KnobValueBuilder(
+      controller: controller,
+      id: knob.id,
+      builder: (_, __) => switch (knob) {
+        DoubleKnob() => DoubleRow(knob: knob, controller: controller),
+        IntKnob() => IntRow(knob: knob, controller: controller),
+        BoolKnob() => BoolRow(knob: knob, controller: controller),
+        StringKnob() => StringRow(knob: knob, controller: controller),
+        ColorKnob() => ColorRow(knob: knob, controller: controller),
+        EnumKnob<dynamic>() => EnumRow<dynamic>(
+            knob: knob,
+            controller: controller,
+          ),
+      },
+    );
   }
 
   @override

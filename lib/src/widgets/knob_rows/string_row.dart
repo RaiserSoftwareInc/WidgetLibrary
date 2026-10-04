@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../knobs/knob.dart';
 import '../../knobs/knob_controller.dart';
-import 'knob_value_builder.dart';
 
 class StringRow extends StatefulWidget {
   final StringKnob knob;
@@ -49,6 +48,7 @@ class _StringRowState extends State<StringRow> {
 
   @override
   Widget build(BuildContext context) {
+    final current = _currentModelValue();
     return Padding(
       key: ValueKey('wl.detail.knob.${widget.knob.id}'),
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
@@ -73,13 +73,9 @@ class _StringRowState extends State<StringRow> {
             onPressed: () => widget.controller.reset(widget.knob.id),
           ),
           Offstage(
-            child: KnobValueBuilder(
-              controller: widget.controller,
-              id: widget.knob.id,
-              builder: (_, value) => Text(
-                value! as String,
-                key: ValueKey('wl.detail.knob.${widget.knob.id}.value'),
-              ),
+            child: Text(
+              current,
+              key: ValueKey('wl.detail.knob.${widget.knob.id}.value'),
             ),
           ),
         ],

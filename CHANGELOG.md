@@ -2,6 +2,21 @@
 
 All notable changes documented here. Format loosely follows Keep a Changelog.
 
+## 0.7.2 — 2026-10-03
+
+### Changed
+- **Knob rows rebuild independently.** `KnobPanel` no longer wraps every row
+  in one `ListenableBuilder`. Each row sits in a `KnobValueBuilder` that
+  rebuilds only when its own knob value changes. The panel itself rebuilds
+  only when `reconcile` replaces the knob list. A slider drag now rebuilds one
+  row and the preview, not every row.
+- **`KnobController.set` skips no-op writes.** Setting a knob to its current
+  value no longer calls `notifyListeners`, so the preview does not rebuild.
+- **Specs sections are built once per panel build.** The widget-tree walk
+  moved out of `_TreeSection.build` into `SpecsPanel.build`, and the section
+  list is created outside the `DraggableScrollableSheet` builder.
+- **`ColorRow` reads the color scheme once** instead of twice per swatch.
+
 ## 0.7.1 — 2026-08-22
 
 ### Changed

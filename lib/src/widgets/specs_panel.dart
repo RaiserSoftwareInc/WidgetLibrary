@@ -9,9 +9,9 @@ class SpecsPanel extends StatelessWidget {
     final ctx = previewKey.currentContext;
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    // Built once per SpecsPanel build, outside the sheet builder. The sheet
-    // re-invokes its builder on every drag frame; reusing the same widget
-    // instances (and list) lets Flutter skip rebuilding the sections.
+    // Built once per SpecsPanel build, outside the sheet builder. The tree
+    // walk runs here, not in a build method, so a sheet rebuild reuses the
+    // same widget instances and Flutter skips the sections.
     final List<Widget> sections = [
       _SizeSection(previewContext: ctx),
       const SizedBox(height: 16),
