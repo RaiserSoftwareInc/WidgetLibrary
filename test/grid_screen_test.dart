@@ -118,4 +118,67 @@ void main() {
     final after = tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode;
     expect(after, ThemeMode.dark);
   });
+
+  testWidgets('search via wl.search_field updates tiles and result count',
+      (tester) async {
+    await tester.pumpWidget(CatalogApp(
+      entriesBuilder: () => [
+        _entry('Button'),
+        _entry('IconButton'),
+        _entry('Card'),
+      ],
+    ),);
+    final count = find.byKey(const ValueKey('wl.grid.result_count'));
+    expect(tester.widget<Text>(count).data, '3 results');
+
+    await tester.enterText(
+      find.byKey(const ValueKey('wl.search_field')),
+      '  BUTTON ',
+    );
+    await tester.pump();
+
+    expect(tester.widget<Text>(count).data, '2 results');
+    expect(find.byKey(const ValueKey('wl.grid_tile.Button')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('wl.grid_tile.IconButton')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('wl.grid_tile.Card')), findsNothing);
+  });
+
+  testWidgets('theme toggle keeps the filtered results', (tester) async {
+    await tester.pumpWidget(CatalogApp(
+      entriesBuilder: () => [
+        _entry('Button', category: 'Inputs'),
+        _entry('Checkbox', category: 'Inputs'),
+        _entry('Card', category: 'Surfaces'),
+      ],
+    ),);
+    await tester.tap(find.byKey(const ValueKey('wl.category_chip.Inputs')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('wl.search_field')),
+      'but',
+    );
+    await tester.pump();
+    expect(find.byKey(const ValueKey('wl.grid_tile.Button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('wl.grid_tile.Checkbox')), findsNothing);
+    expect(find.byKey(const ValueKey('wl.grid_tile.Card')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('wl.app_bar.theme_toggle')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.dark,
+    );
+    expect(find.byKey(const ValueKey('wl.grid_tile.Button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('wl.grid_tile.Checkbox')), findsNothing);
+    expect(find.byKey(const ValueKey('wl.grid_tile.Card')), findsNothing);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('wl.grid.result_count')))
+          .data,
+      '1 result',
+    );
+  });
 }

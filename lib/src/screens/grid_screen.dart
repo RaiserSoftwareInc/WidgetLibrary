@@ -24,11 +24,13 @@ class _GridScreenState extends State<GridScreen> {
   String _category = _allCategory;
   static const _allCategory = 'All';
 
-  // Cached so a search keystroke, category tap, or theme toggle does not
-  // re-run the user's catalog builder and reconstruct every CatalogEntry.
-  // Refreshed on hot reload (reassemble) and when the builder changes.
+  // Cached so a keystroke, category tap, or theme toggle does not re-run the
+  // catalog builder; build never filters (see _applyFilter). Refreshed on
+  // hot reload (reassemble) and when the builder changes.
   late List<CatalogEntry> _entries;
   late List<String> _cats;
+  late List<String> _lowerNames;
+  late List<CatalogEntry> _filtered;
 
   @override
   void initState() {
@@ -52,6 +54,7 @@ class _GridScreenState extends State<GridScreen> {
 
   void _refreshEntries() {
     _entries = widget.entriesBuilder();
+    _lowerNames = [for (final e in _entries) e.name.toLowerCase()];
     final categorySet = <String>{};
     for (final e in _entries) {
       final c = e.category;
@@ -61,6 +64,19 @@ class _GridScreenState extends State<GridScreen> {
         ? const <String>[]
         : [_allCategory, ...categorySet];
     if (!_cats.contains(_category)) _category = _allCategory;
+    _applyFilter();
+  }
+
+  void _applyFilter({String? query, String? category}) {
+    _query = query ?? _query;
+    _category = category ?? _category;
+    final q = _query.trim().toLowerCase();
+    _filtered = [
+      for (var i = 0; i < _entries.length; i++)
+        if ((_category == _allCategory || _entries[i].category == _category) &&
+            (q.isEmpty || _lowerNames[i].contains(q)))
+          _entries[i],
+    ];
   }
 
   @override
@@ -69,13 +85,6 @@ class _GridScreenState extends State<GridScreen> {
     final cats = _cats;
     final theme = CatalogTheme.of(context);
     final cs = Theme.of(context).colorScheme;
-
-    final q = _query.trim().toLowerCase();
-    final filtered = entries.where((e) {
-      final catOk = _category == _allCategory || e.category == _category;
-      final qOk = q.isEmpty || e.name.toLowerCase().contains(q);
-      return catOk && qOk;
-    }).toList();
 
     final hasEntries = entries.isNotEmpty;
 
@@ -99,13 +108,13 @@ class _GridScreenState extends State<GridScreen> {
           if (hasEntries) ...[
             _SearchBar(
               value: _query,
-              onChanged: (v) => setState(() => _query = v),
+              onChanged: (v) => setState(() => _applyFilter(query: v)),
             ),
             if (cats.isNotEmpty)
               _CategoryStrip(
                 categories: cats,
                 selected: _category,
-                onSelected: (c) => setState(() => _category = c),
+                onSelected: (c) => setState(() => _applyFilter(category: c)),
               ),
             Divider(height: 1, color: cs.outlineVariant),
             Padding(
@@ -113,7 +122,7 @@ class _GridScreenState extends State<GridScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  '${filtered.length} ${filtered.length == 1 ? 'result' : 'results'}',
+                  '${_filtered.length} ${_filtered.length == 1 ? 'result' : 'results'}',
                   key: const ValueKey('wl.grid.result_count'),
                   style: Theme.of(context)
                       .textTheme
@@ -126,10 +135,10 @@ class _GridScreenState extends State<GridScreen> {
           Expanded(
             child: !hasEntries
                 ? const EmptyState()
-                : filtered.isEmpty
+                : _filtered.isEmpty
                     ? _NoMatches(query: _query)
                     : _GridBody(
-                        entries: filtered,
+                        entries: _filtered,
                         entriesBuilder: widget.entriesBuilder,
                       ),
           ),
@@ -334,6 +343,7 @@ class _Tile extends StatelessWidget {
             builder: (_) => DetailScreen(
               entryName: entry.name,
               entriesBuilder: entriesBuilder,
+              entry: entry,
             ),
           ),
         ),

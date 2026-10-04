@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widget_library/widget_library.dart';
+import 'package:widget_library/src/screens/grid_screen.dart';
 import 'package:widget_library/src/theme/theme_controller.dart';
 
 List<CatalogEntry> _empty() => const [];
@@ -57,6 +58,31 @@ void main() {
     );
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('Legacy'), findsOneWidget);
+  });
+
+  testWidgets('legacy entries: keeps one builder identity across theme toggle',
+      (tester) async {
+    final entry = CatalogEntry(
+      name: 'Legacy',
+      states: {'default': (_) => const Text('LEGACY-BODY')},
+    );
+    await tester.pumpWidget(
+      // ignore: deprecated_member_use_from_same_package
+      CatalogApp(entries: [entry]),
+    );
+    final before =
+        tester.widget<GridScreen>(find.byType(GridScreen)).entriesBuilder;
+
+    await tester.tap(find.byKey(const ValueKey('wl.app_bar.theme_toggle')));
+    await tester.pump();
+
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.dark,
+    );
+    final after =
+        tester.widget<GridScreen>(find.byType(GridScreen)).entriesBuilder;
+    expect(identical(before, after), isTrue);
   });
 
   test('CatalogApp asserts when neither entries nor entriesBuilder given', () {
